@@ -7,14 +7,14 @@
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts for authentic concert poster typography -->
+  <!-- Google Fonts: Bebas Neue, Montserrat, Oswald -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@500;600;700;800;900&family=Oswald:wght@600;700;800;900&display=swap" rel="stylesheet">
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- html2canvas for high quality image export -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous"></script>
+  <!-- html-to-image (Uses native SVG foreignObject for 100% pixel-perfect render with no image squishing) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
 
   <script>
     tailwind.config = {
@@ -22,10 +22,10 @@
         extend: {
           colors: {
             rockRed: '#c0101a',
-            rockRedBright: '#d81e28',
+            rockRedBright: '#e51723',
             posterDark: '#060607',
             cardBg: '#08080a',
-            vintageBeige: '#ded5bf',
+            vintageBeige: '#dfd8c8',
             boneWhite: '#f5f1e8'
           },
           fontFamily: {
@@ -41,23 +41,23 @@
   <style>
     body {
       background-color: #030304;
-      background-image: radial-gradient(circle at 50% 10%, rgba(192, 16, 26, 0.18) 0%, transparent 65%);
+      background-image: radial-gradient(circle at 50% 12%, rgba(192, 16, 26, 0.22) 0%, transparent 65%);
       font-family: 'Montserrat', sans-serif;
     }
 
     /* Fixed Compact Poster Frame matching real rock gig poster proportions */
     .poster-outer-frame {
       width: 100%;
-      max-width: 540px;
+      max-width: 550px;
       margin: 0 auto;
       background-color: #060607;
       border: 3px solid #1a1a1e;
       outline: 2px solid #c0101a;
-      box-shadow: 0 12px 45px rgba(0,0,0,0.95), 0 0 30px rgba(192, 16, 26, 0.25);
+      box-shadow: 0 12px 45px rgba(0,0,0,0.95), 0 0 35px rgba(192, 16, 26, 0.25);
       box-sizing: border-box;
     }
 
-    /* Compact Red Bordered Block Cards with tight hugging content */
+    /* Block Card container with tight content wrapping */
     .block-card {
       border: 1.5px solid #c0101a;
       background: #08080a;
@@ -67,18 +67,18 @@
       overflow: visible !important;
     }
 
-    /* Solid Red Header Bar with guaranteed no-clipping height and overflow */
+    /* Solid Red Header Bar with guaranteed padding and line-height */
     .block-header-bar {
       background-color: #c0101a;
-      padding: 5px 8px;
-      min-height: 32px;
-      overflow: visible !important;
+      padding: 6px 8px;
+      min-height: 34px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      box-sizing: border-box;
     }
 
-    /* Pixel-perfect circle number badge for screen and html2canvas */
+    /* Pixel-perfect circle number badge */
     .badge-circle {
       display: inline-flex !important;
       align-items: center !important;
@@ -101,42 +101,33 @@
       padding: 0 !important;
     }
 
-    /* Block Title text container with relaxed height to prevent half-cut characters */
+    /* Header text: Oswald bold, high-contrast black, no clipping */
     .block-title-text {
       font-family: 'Oswald', 'Montserrat', sans-serif;
       font-weight: 900;
       color: #000000;
       letter-spacing: 0.05em;
-      line-height: 1.25;
+      line-height: 1.2;
       text-transform: uppercase;
-      overflow: visible !important;
+      font-size: 13.5px;
       white-space: nowrap;
     }
 
-    /* Odd final block spanning full width */
+    /* Natural proportion preservation for logo image */
+    .band-logo-img {
+      width: auto !important;
+      height: auto !important;
+      max-width: 90% !important;
+      max-height: 180px !important;
+      object-fit: contain !important;
+      margin: 0 auto !important;
+      display: block !important;
+    }
+
+    /* Odd final block spanning full 2-columns */
     .block-span-full {
       grid-column: 1 / -1 !important;
       width: 100% !important;
-    }
-
-    /* Strict Capture Mode during export: locks exact 540px layout */
-    .is-exporting .no-export {
-      display: none !important;
-    }
-
-    .is-exporting .poster-outer-frame {
-      box-shadow: none !important;
-      margin: 0 auto !important;
-      width: 540px !important;
-      max-width: 540px !important;
-      min-width: 540px !important;
-    }
-
-    .is-exporting #blocksContainer {
-      display: grid !important;
-      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-      gap: 6px !important;
-      align-items: start !important;
     }
 
     /* Inline editable subtle cues */
@@ -146,7 +137,7 @@
     }
     [contenteditable="true"]:focus {
       outline: 1.5px solid #c0101a;
-      background: rgba(192, 16, 26, 0.12);
+      background: rgba(192, 16, 26, 0.15);
       border-radius: 2px;
     }
   </style>
@@ -155,9 +146,9 @@
 <body class="text-zinc-100 min-h-screen flex flex-col items-center p-2 sm:p-5">
 
   <!-- Floating Control Bar -->
-  <header class="no-export sticky top-2 z-50 w-full max-w-[540px] bg-zinc-900/95 backdrop-blur-md border border-zinc-800 rounded-xl p-2.5 mb-3.5 shadow-2xl">
+  <header class="edit-only-control sticky top-2 z-50 w-full max-w-[550px] bg-zinc-900/95 backdrop-blur-md border border-zinc-800 rounded-xl p-2.5 mb-3.5 shadow-2xl">
     <div class="flex flex-wrap items-center justify-between gap-2">
-      <!-- Status Badge -->
+      <!-- Status Indicator -->
       <div class="flex items-center gap-2">
         <span class="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse"></span>
         <span class="font-bebas text-lg tracking-wider text-white">COLAPSO SETLIST</span>
@@ -173,8 +164,8 @@
           <span>Bloque</span>
         </button>
 
-        <button onclick="openLogoModal()" class="flex items-center gap-1 px-2.5 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs rounded border border-zinc-700 transition active:scale-95" title="Cambiar imagen de logo.png">
-          <i class="fa-solid fa-image text-amber-500 text-[10px]"></i>
+        <button onclick="openLogoModal()" class="flex items-center gap-1 px-2.5 py-1 bg-zinc-800 hover:bg-zinc-700 text-amber-400 text-xs rounded border border-zinc-700 transition active:scale-95" title="Configurar imagen de logo.png">
+          <i class="fa-solid fa-image text-[10px]"></i>
           <span>Logo</span>
         </button>
 
@@ -191,52 +182,51 @@
     </div>
   </header>
 
-  <!-- MAIN POSTER CONTAINER (High Fidelity Target for html2canvas - Fixed 540px Frame) -->
+  <!-- MAIN POSTER CONTAINER (Target for html-to-image) -->
   <div id="setlistPoster" class="poster-outer-frame rounded-lg p-3 sm:p-4 relative transition-all">
     
-    <!-- HEADER AREA: Authentic Vintage Poster Header -->
-    <div class="w-full text-center mt-0.5 mb-2.5">
+    <!-- HEADER AREA: Vintage Poster Header -->
+    <div class="w-full text-center mt-1 mb-2">
       
-      <!-- Top Title: "SETLIST OFICIAL" in Large Vintage Beige -->
+      <!-- Top Title: "SETLIST OFICIAL" in Large Vintage Beige with ample line-height -->
       <h2 id="posterSubtitle" 
           contenteditable="true" 
           onblur="updateSubtitle(this.innerText)" 
-          class="font-bebas text-4xl sm:text-5xl tracking-[0.24em] text-[#ded5bf] uppercase drop-shadow leading-none select-none">
+          class="font-bebas text-4xl sm:text-5xl tracking-[0.24em] text-[#dfd8c8] uppercase leading-[1.15] py-1 select-none drop-shadow">
         SETLIST OFICIAL
       </h2>
 
-      <!-- BAND LOGO CONTAINER (Direct <img> pointing to logo.png, 90% wide, natural proportions) -->
+      <!-- BAND LOGO CONTAINER (Direct <img> pointing to logo.png with natural proportion preservation) -->
       <div id="logoContainer" class="my-2 min-h-[90px] w-full flex items-center justify-center relative group">
-        <!-- Direct image logo with automatic aspect ratio containment (no stretching) -->
         <img id="customLogoImg" 
              src="logo.png" 
              alt="Logo Oficial COLAPSO" 
-             class="w-[92%] max-w-[480px] max-h-40 sm:max-h-48 object-contain mx-auto cursor-pointer drop-shadow-2xl transition-transform hover:scale-[1.01]" 
+             class="band-logo-img cursor-pointer drop-shadow-2xl transition-transform hover:scale-[1.01]" 
              onclick="openLogoModal()"
              title="Click para cambiar logo o subir tu archivo">
 
-        <!-- Discreet upload placeholder when logo.png is not found on server -->
-        <div id="logoFallbackPlaceholder" class="hidden flex-col items-center justify-center p-3 border-2 border-dashed border-red-800/80 bg-red-950/20 rounded cursor-pointer w-[92%] py-5 text-center" onclick="openLogoModal()">
+        <!-- Fallback Placeholder if logo.png is not found -->
+        <div id="logoFallbackPlaceholder" class="hidden flex-col items-center justify-center p-3 border-2 border-dashed border-red-800/80 bg-red-950/20 rounded cursor-pointer w-[90%] py-5 text-center" onclick="openLogoModal()">
           <i class="fa-solid fa-arrow-up-from-bracket text-red-500 text-xl mb-1.5"></i>
           <span class="font-bebas text-xl text-vintageBeige tracking-wider">CLICK PARA SUBIR LOGO.PNG</span>
           <span class="text-[10px] text-zinc-400 font-mono">O coloca logo.png en tu carpeta de GitHub</span>
         </div>
 
         <!-- Floating Edit Button on Hover -->
-        <button onclick="openLogoModal()" class="no-export absolute right-1 top-0 bg-zinc-900/90 hover:bg-red-600 text-zinc-300 hover:text-white px-2 py-0.5 rounded text-[11px] opacity-0 group-hover:opacity-100 transition shadow">
+        <button onclick="openLogoModal()" class="edit-only-control absolute right-1 top-0 bg-zinc-900/90 hover:bg-red-600 text-zinc-300 hover:text-white px-2 py-0.5 rounded text-[11px] opacity-0 group-hover:opacity-100 transition shadow">
           <i class="fa-solid fa-pen-to-square"></i> Cambiar
         </button>
       </div>
 
     </div>
 
-    <!-- DYNAMIC 2-COLUMN COMPACT SETLIST BLOCKS (align-items: start avoids huge empty voids) -->
+    <!-- DYNAMIC 2-COLUMN SETLIST BLOCKS (Compact start-aligned grid) -->
     <div id="blocksContainer" class="grid grid-cols-2 gap-1.5 sm:gap-2 items-start">
-      <!-- Dynamic block cards injected here via JS -->
+      <!-- Dynamic block cards rendered here via JavaScript -->
     </div>
 
-    <!-- Add Block Action inside Poster (Hidden during export) -->
-    <div class="no-export mt-2.5 text-center">
+    <!-- Add Block Action inside Poster (Filtered during export) -->
+    <div class="edit-only-control mt-2.5 text-center">
       <button onclick="addNewBlock()" class="w-full py-1.5 border border-dashed border-red-900/70 hover:border-red-500 bg-red-950/20 hover:bg-red-950/40 text-red-400 hover:text-red-200 rounded font-bold text-xs tracking-wider transition flex items-center justify-center gap-1.5">
         <i class="fa-solid fa-circle-plus text-sm"></i>
         <span>AGREGAR NUEVO BLOQUE</span>
@@ -253,7 +243,7 @@
   </div>
 
   <!-- Bottom Quick Actions for Mobile -->
-  <div class="no-export mt-3.5 w-full max-w-[540px] flex gap-2">
+  <div class="edit-only-control mt-3.5 w-full max-w-[550px] flex gap-2">
     <button onclick="exportAsImage()" class="flex-1 py-2.5 px-4 bg-red-600 hover:bg-red-700 active:scale-98 text-white font-black text-xs sm:text-sm tracking-wider rounded shadow-lg shadow-red-950/70 transition flex items-center justify-center gap-2">
       <i class="fa-solid fa-file-image text-sm"></i>
       <span>DESCARGAR IMAGEN (PNG)</span>
@@ -465,7 +455,7 @@ Hombre lobo en París"></textarea>
       ]
     };
 
-    const STORAGE_KEY = "colapso_setlist_storage_v4";
+    const STORAGE_KEY = "colapso_setlist_storage_v5";
     let appData = null;
     let targetBlockIdForBulk = null;
 
@@ -516,7 +506,7 @@ Hombre lobo en París"></textarea>
       const songInfo = document.createElement('div');
       songInfo.className = "flex items-baseline gap-1.5 flex-1 min-w-0";
 
-      // Vibrant red numbering and Title Case bone white titles
+      // Vibrant red numbering and bone-white bold titles
       songInfo.innerHTML = `
         <span class="font-bebas text-[15px] sm:text-[16px] font-black text-red-500 w-4 text-right select-none flex-shrink-0">
           ${displayNumber}.
@@ -536,7 +526,7 @@ Hombre lobo en París"></textarea>
       `;
 
       const songControls = document.createElement('div');
-      songControls.className = "no-export flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ml-1";
+      songControls.className = "edit-only-control flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ml-1";
       songControls.innerHTML = `
         <button onclick="moveSong('${block.id}', '${song.id}', -1)" ${songIdx === 0 ? 'disabled' : ''} class="p-0.5 text-zinc-500 hover:text-white disabled:opacity-20 text-[9px]">
           <i class="fa-solid fa-chevron-up"></i>
@@ -575,7 +565,7 @@ Hombre lobo en París"></textarea>
         }`;
         blockEl.id = `block-${block.id}`;
 
-        // Header Bar (Solid red, black circle badge, bold rock font without clipping)
+        // Header Bar: Solid red, black circle badge, bold rock font without clipping
         const headerDiv = document.createElement('div');
         headerDiv.className = "block-header-bar";
 
@@ -584,11 +574,10 @@ Hombre lobo en París"></textarea>
 
         const badgeNum = blockIndex + 1;
 
-        // Structured cleanly so html2canvas renders perfectly
         titleArea.innerHTML = `
           <span class="badge-circle">${badgeNum}</span>
-          <div class="ml-1.5 flex items-center block-title-text text-[13px] sm:text-[14px]">
-            <span class="mr-1 select-none text-black font-black">-</span>
+          <div class="ml-1.5 flex items-center block-title-text">
+            <span class="mr-1.5 select-none text-black font-black">-</span>
             <span contenteditable="true" 
                   onblur="updateBlockTitle('${block.id}', this.innerText)" 
                   class="hover:text-zinc-900 transition focus:outline-none">
@@ -597,9 +586,9 @@ Hombre lobo en París"></textarea>
           </div>
         `;
 
-        // Action icons (hidden in image export)
+        // Action icons (filtered in image export)
         const actionsDiv = document.createElement('div');
-        actionsDiv.className = "no-export flex items-center gap-1 text-[10px] flex-shrink-0";
+        actionsDiv.className = "edit-only-control flex items-center gap-1 text-[10px] flex-shrink-0";
         actionsDiv.innerHTML = `
           <button onclick="openBulkModalForBlock('${block.id}')" class="p-0.5 px-1 bg-black/40 hover:bg-black/70 text-white rounded" title="Pegar canciones">
             <i class="fa-solid fa-paste"></i>
@@ -660,9 +649,9 @@ Hombre lobo en París"></textarea>
           contentDiv.appendChild(songsList);
         }
 
-        // Add song button (no-export)
+        // Add song button (filtered in export)
         const addBtn = document.createElement('div');
-        addBtn.className = "no-export mt-1 pt-1 border-t border-zinc-900 flex justify-between items-center";
+        addBtn.className = "edit-only-control mt-1 pt-1 border-t border-zinc-900 flex justify-between items-center";
         addBtn.innerHTML = `
           <button onclick="addNewSong('${block.id}')" class="text-[10px] font-bold text-red-400 hover:text-red-300 flex items-center gap-1 py-0.5 px-1.5 rounded hover:bg-red-950/30 transition">
             <i class="fa-solid fa-plus text-[8px]"></i>
@@ -995,92 +984,49 @@ Hombre lobo en París"></textarea>
     }
 
     async function exportAsImage() {
-      const poster = document.getElementById('setlistPoster');
-      showToast("Generando póster en alta resolución...", "info");
-
-      // Wait for all custom fonts to finish rendering
-      if (document.fonts && document.fonts.ready) {
-        await document.fonts.ready;
-      }
-
-      // Check if logo image is loaded
-      const logoImg = document.getElementById('customLogoImg');
-      if (logoImg && !logoImg.complete) {
-        await new Promise((resolve) => {
-          logoImg.onload = resolve;
-          logoImg.onerror = resolve;
-        });
-      }
-
-      // Activate export isolation mode
-      document.body.classList.add('is-exporting');
-      window.scrollTo(0, 0);
-
-      // Measure exact poster dimensions to prevent aspect deformation
-      const posterRect = poster.getBoundingClientRect();
+      const posterNode = document.getElementById('setlistPoster');
+      showToast("Generando imagen con renderizado nativo...", "info");
 
       try {
-        const canvas = await html2canvas(poster, {
-          scale: 2.5, // Crisp 2.5x retina resolution
+        // Ensure web fonts are completely ready before rasterization
+        if (document.fonts && document.fonts.ready) {
+          await document.fonts.ready;
+        }
+
+        // Wait for image logo if still loading
+        const logoImg = document.getElementById('customLogoImg');
+        if (logoImg && !logoImg.complete && !logoImg.classList.contains('hidden')) {
+          await new Promise((resolve) => {
+            logoImg.onload = resolve;
+            logoImg.onerror = resolve;
+          });
+        }
+
+        // html-to-image: Generates high-res PNG without synthetic canvas hacks or squishing
+        const dataUrl = await htmlToImage.toPng(posterNode, {
+          pixelRatio: 2.5,
           backgroundColor: '#060607',
-          useCORS: true,
-          logging: false,
-          width: posterRect.width,
-          height: posterRect.height,
-          scrollY: -window.scrollY,
-          scrollX: -window.scrollX,
-          onclone: (clonedDoc) => {
-            const clonedPoster = clonedDoc.getElementById('setlistPoster');
-            if (clonedPoster) {
-              clonedPoster.style.width = '540px';
-              clonedPoster.style.maxWidth = '540px';
-              clonedPoster.style.margin = '0 auto';
-              clonedPoster.style.boxShadow = 'none';
+          cacheBust: true,
+          filter: (node) => {
+            // Automatically exclude all editor buttons and controls
+            if (node.classList && node.classList.contains('edit-only-control')) {
+              return false;
             }
-
-            // Guarantee zero text clipping in block headers
-            const headerTitles = clonedDoc.querySelectorAll('.block-title-text');
-            headerTitles.forEach(el => {
-              el.style.overflow = 'visible';
-              el.style.lineHeight = '1.25';
-              el.style.display = 'inline-block';
-              el.style.fontSize = '13.5px';
-            });
-
-            // Ensure badge circles remain geometrically centered
-            const badges = clonedDoc.querySelectorAll('.badge-circle');
-            badges.forEach(badge => {
-              badge.style.display = 'inline-block';
-              badge.style.width = '22px';
-              badge.style.height = '22px';
-              badge.style.lineHeight = '22px';
-              badge.style.textAlign = 'center';
-              badge.style.verticalAlign = 'middle';
-              badge.style.borderRadius = '50%';
-              badge.style.backgroundColor = '#000000';
-              badge.style.color = '#ffffff';
-              badge.style.margin = '0';
-              badge.style.padding = '0';
-              badge.style.fontSize = '12px';
-              badge.style.fontWeight = '900';
-              badge.style.fontFamily = 'Arial Black, sans-serif';
-            });
+            return true;
           }
         });
 
-        document.body.classList.remove('is-exporting');
-
+        // Trigger direct PNG download
         const link = document.createElement('a');
         link.download = `setlist-colapso-${Date.now()}.png`;
-        link.href = canvas.toDataURL('image/png');
+        link.href = dataUrl;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        showToast("¡Imagen descargada con éxito!", "success");
+        showToast("¡Póster descargado en alta resolución!", "success");
       } catch (err) {
-        document.body.classList.remove('is-exporting');
         console.error("Export error:", err);
-        showToast("Error al exportar imagen", "error");
+        showToast("Error al generar imagen: " + (err.message || ""), "error");
       }
     }
 
@@ -1095,7 +1041,7 @@ Hombre lobo en París"></textarea>
       } else if (type === "error") {
         icon.className = "fa-solid fa-circle-xmark text-red-500";
       } else if (type === "info") {
-        icon.className = "fa-solid fa-spinner fa-spin text-blue-400";
+        icon.className = "fa-solid fa-spinner fa-spin text-cyan-400";
       } else {
         icon.className = "fa-solid fa-circle-check text-green-500";
       }
