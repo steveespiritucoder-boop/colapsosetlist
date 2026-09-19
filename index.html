@@ -408,6 +408,33 @@
     </div>
   </div>
 
+  <!-- MODAL: Confirm Delete Block -->
+  <div id="confirmDeleteModal" class="modal-backdrop fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3" onclick="handleBackdropClick(event, 'confirmDeleteModal')">
+    <div class="bg-zinc-900 border border-red-900/80 rounded-xl max-w-sm w-full p-4 shadow-2xl relative">
+      <div class="flex items-center gap-2 mb-2 pb-2 border-b border-zinc-800">
+        <i class="fa-solid fa-triangle-exclamation text-red-500 text-lg"></i>
+        <h3 class="font-bebas text-xl text-white tracking-wide">ELIMINAR BLOQUE</h3>
+      </div>
+      
+      <p class="text-xs text-zinc-300 mt-2">
+        ¿Estás seguro de que deseas eliminar <span id="deleteBlockTargetName" class="text-red-400 font-bold">este bloque</span>?
+      </p>
+      <p class="text-[11px] text-zinc-400 mt-1">
+        Esta acción eliminará también todas las canciones que contiene y se sincronizará inmediatamente.
+      </p>
+
+      <div class="mt-4 flex gap-2">
+        <button onclick="closeConfirmDeleteModal()" class="flex-1 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold rounded text-xs transition">
+          Cancelar
+        </button>
+        <button onclick="executeBlockDeletion()" class="flex-1 py-1.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded text-xs transition flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-trash-can text-[10px]"></i>
+          <span>Eliminar</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast -->
   <div id="toast" class="fixed bottom-4 right-4 z-50 bg-zinc-800 border border-red-600 text-white px-3.5 py-2 rounded-lg shadow-2xl transform translate-y-24 opacity-0 transition-all duration-200 flex items-center gap-2 text-xs">
     <i id="toastIcon" class="fa-solid fa-circle-check text-red-500"></i>
@@ -419,8 +446,8 @@
     // COLOCA AQUÍ TUS CREDENCIALES DIRECTAS DE SUPABASE
     // (Búscalas en: Project Settings > API > Project URL y Project API keys)
     // ============================================================================
-    const SUPABASE_URL = "https://kdjrfpxjrprfzdmuqqnm.supabase.co"; // <-- Pega tu Project URL aquí
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkanJmcHhqcnByZnpkbXVxcW5tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk4NDI2OTcsImV4cCI6MjEwNTQxODY5N30.WA8YXc0lMquj8jP6wRubwQ4DZl7V_rBLLPIGk8NaNbk";                // <-- Pega tu Anon Key aquí
+    const SUPABASE_URL = "https://tu-proyecto.supabase.co"; // <-- Pega tu Project URL aquí
+    const SUPABASE_KEY = "tu-anon-key-aqui";                // <-- Pega tu Anon Key aquí
     // ============================================================================
 
     const SETLIST_DOCUMENT_ID = "colapso-oficial";
@@ -442,6 +469,7 @@
 
     let appData = JSON.parse(JSON.stringify(EMPTY_STATE));
     let targetBlockIdForBulk = null;
+    let pendingBlockIdToDelete = null;
 
     function escapeHtml(text) {
       if (!text) return "";
@@ -470,6 +498,7 @@
       if (e.key === "Escape") {
         closeLogoModal();
         closeBulkModal();
+        closeConfirmDeleteModal();
       }
     });
 
@@ -715,7 +744,7 @@
           <button onclick="moveBlock('${block.id}', 1)" ${blockIndex === appData.blocks.length - 1 ? 'disabled' : ''} class="p-0.5 px-1 bg-black/40 hover:bg-black/70 disabled:opacity-20 text-white rounded" title="Bajar bloque">
             <i class="fa-solid fa-arrow-down"></i>
           </button>
-          <button onclick="deleteBlock('${block.id}')" class="p-0.5 px-1 bg-black/40 hover:bg-black text-red-300 hover:text-white rounded" title="Eliminar bloque">
+          <button onclick="requestDeleteBlock('${block.id}')" class="p-0.5 px-1 bg-black/40 hover:bg-black text-red-300 hover:text-white rounded" title="Eliminar bloque">
             <i class="fa-solid fa-trash-can"></i>
           </button>
         `;
@@ -790,10 +819,40 @@
       renderAll(); saveData(); showToast(`BLOQUE ${nextNum} agregado`);
     }
 
-    function deleteBlock(blockId) {
-      if (appData.blocks.length <= 1) { showToast("Debes conservar al menos 1 bloque", "warning"); return; }
+    function requestDeleteBlock(blockId) {
+      if (appData.blocks.length <= 1) {
+        showToast("Debes conservar al menos 1 bloque", "warning");
+        return;
+      }
+
+      const block = appData.blocks.find(b => b.id === blockId);
+      if (!block) return;
+
+      pendingBlockIdToDelete = blockId;
+      const targetLabel = document.getElementById('deleteBlockTargetName');
+      if (targetLabel) {
+        targetLabel.innerText = `"${block.title || 'este bloque'}" (${block.songs.length} temas)`;
+      }
+
+      const modal = document.getElementById('confirmDeleteModal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeConfirmDeleteModal() {
+      const modal = document.getElementById('confirmDeleteModal');
+      if (modal) modal.classList.add('hidden');
+      pendingBlockIdToDelete = null;
+    }
+
+    function executeBlockDeletion() {
+      if (!pendingBlockIdToDelete) return;
+      
+      const blockId = pendingBlockIdToDelete;
       appData.blocks = appData.blocks.filter(b => b.id !== blockId);
-      renderAll(); saveData(); showToast("Bloque eliminado");
+      closeConfirmDeleteModal();
+      renderAll();
+      saveData();
+      showToast("Bloque eliminado");
     }
 
     function moveBlock(blockId, direction) {
