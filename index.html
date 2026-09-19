@@ -209,39 +209,13 @@
 
       <!-- BAND LOGO CONTAINER (Takes the full 80% header width) -->
       <div id="logoContainer" class="my-3 relative group min-h-[110px] w-full flex items-center justify-center">
-        
-        <!-- 🎸 AQUÍ COLOCAS TU IMAGEN DIRECTA PARA GITHUB:
-             Reemplaza src="" con la ruta de tu logo, por ejemplo:
-             src="./logo.png" o src="./assets/colapso.png" o URL raw de GitHub.
-             Si src no está vacío, se mostrará automáticamente reemplazando el texto vectorial. -->
+        <!-- Imagen directa logo.png (ocupa el 80% del ancho con proporción rectangular) -->
         <img id="customLogoImg" 
-             src="" 
-             alt="Logo COLAPSO" 
-             class="hidden w-full max-h-36 sm:max-h-44 object-contain mx-auto drop-shadow-2xl cursor-pointer" 
-             onclick="openLogoModal()">
-
-        <!-- Vector Rock Logo (Default fallback if no image src is set) -->
-        <div id="defaultVectorLogo" class="w-full relative select-none cursor-pointer" onclick="openLogoModal()">
-          <div class="flex items-center justify-center">
-            <span class="font-oswald font-black text-6xl sm:text-8xl tracking-wider text-amber-100 uppercase" 
-                  style="text-shadow: 3px 3px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 0 8px 15px rgba(0,0,0,0.8); letter-spacing: 0.08em;">
-              COL
-            </span>
-            <div class="relative inline-flex items-center justify-center mx-[-3px] sm:mx-[-6px]">
-              <span class="font-oswald font-black text-6xl sm:text-8xl text-transparent bg-clip-text bg-gradient-to-b from-red-600 to-red-800" 
-                    style="text-shadow: 2px 2px 0 #000;">
-                A
-              </span>
-              <svg class="absolute w-12 sm:w-16 h-20 sm:h-24 -top-3 text-red-600 drop-shadow-[0_2px_8px_rgba(220,38,38,0.8)] pointer-events-none" viewBox="0 0 100 160" fill="currentColor">
-                <polygon points="65,0 15,90 48,90 30,160 85,70 52,70"></polygon>
-              </svg>
-            </div>
-            <span class="font-oswald font-black text-6xl sm:text-8xl tracking-wider text-amber-100 uppercase" 
-                  style="text-shadow: 3px 3px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 0 8px 15px rgba(0,0,0,0.8); letter-spacing: 0.08em;">
-              PSO
-            </span>
-          </div>
-        </div>
+             src="logo.png" 
+             alt="Logo Oficial COLAPSO" 
+             class="w-full max-h-40 sm:max-h-52 object-contain mx-auto drop-shadow-2xl cursor-pointer transition-transform hover:scale-[1.01]" 
+             onclick="openLogoModal()"
+             title="Click para cambiar logo o configurar">
 
         <!-- Floating Edit Button on Hover -->
         <button onclick="openLogoModal()" class="no-export absolute right-1 top-1 bg-zinc-900/80 hover:bg-red-600 text-zinc-300 hover:text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition shadow">
@@ -308,17 +282,23 @@
         </div>
 
         <div>
-          <label class="block text-xs font-bold uppercase text-zinc-400 mb-1">Subir Imagen de Logo (PNG o JPG)</label>
+          <label class="block text-xs font-bold uppercase text-zinc-400 mb-1">Ruta o URL del Logo</label>
+          <input type="text" id="inputLogoUrl" placeholder="logo.png o URL" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-xs font-mono focus:outline-none focus:border-red-500">
+          <p class="text-[11px] text-zinc-400 mt-1">Por defecto: <code class="text-red-400 font-mono">logo.png</code></p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase text-zinc-400 mb-1">Subir Otra Imagen de Logo (PNG o JPG)</label>
           <input type="file" id="logoFileInput" accept="image/*" class="w-full text-xs text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-red-600 file:text-white hover:file:bg-red-700 cursor-pointer">
-          <p class="text-[11px] text-zinc-400 mt-1">O puedes poner la ruta directa en el atributo <code class="text-red-400 font-mono">src="..."</code> de la etiqueta &lt;img&gt; en el código.</p>
         </div>
 
         <div class="pt-2 flex flex-col gap-2">
           <button onclick="saveLogoSettings()" class="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg text-sm transition">
             Guardar Cambios
           </button>
-          <button onclick="restoreVectorLogo()" class="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-semibold rounded-lg text-xs transition">
-            Usar Logo Estilo Rock Original (COLAPSO)
+          <button onclick="restoreOriginalLogo()" class="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-semibold rounded-lg text-xs transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-rotate-left text-amber-500"></i>
+            <span>Restablecer a logo.png Original</span>
           </button>
         </div>
       </div>
@@ -1061,39 +1041,27 @@ Hombre lobo en París"></textarea>
       showToast("Ajustes de banda actualizados");
     }
 
-    function restoreVectorLogo() {
-      appData.customLogo = "USE_VECTOR";
+    function restoreOriginalLogo() {
+      appData.customLogo = "logo.png";
+      const logoUrlInput = document.getElementById('inputLogoUrl');
+      if (logoUrlInput) logoUrlInput.value = "logo.png";
       saveData();
       applyLogoState();
       closeLogoModal();
-      showToast("Título vectorial restaurado");
+      showToast("Logo restablecido a logo.png original");
     }
 
     function applyLogoState() {
-      const vectorEl = document.getElementById('defaultVectorLogo');
       const imgEl = document.getElementById('customLogoImg');
-
-      if (appData.customLogo === "USE_VECTOR") {
-        imgEl.classList.add('hidden');
-        vectorEl.classList.remove('hidden');
-        return;
-      }
-
-      const candidateSrc = appData.customLogo || "logo.png";
-
-      // Bind load and error handlers
-      imgEl.onload = function() {
-        imgEl.classList.remove('hidden');
-        vectorEl.classList.add('hidden');
-      };
+      const targetSrc = appData.customLogo || "logo.png";
 
       imgEl.onerror = function() {
-        // Fall back gracefully to vector if the file isn't found at this URL
-        imgEl.classList.add('hidden');
-        vectorEl.classList.remove('hidden');
+        // Fallback visual sutil si no encuentra la imagen en el entorno actual
+        imgEl.onerror = null;
+        imgEl.src = "https://placehold.co/700x180/09090b/dc2626?text=COLAPSO+(logo.png)";
       };
 
-      imgEl.src = candidateSrc;
+      imgEl.src = targetSrc;
     }
 
     function confirmReset() {
