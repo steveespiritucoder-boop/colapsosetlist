@@ -41,7 +41,6 @@
       font-family: 'Montserrat', sans-serif;
     }
 
-    /* Mobile: casi todo el ancho. Desktop: hasta 900px centrado */
     .poster-outer-frame {
       width: 100%;
       max-width: 100%;
@@ -76,7 +75,6 @@
       overflow: visible !important;
     }
 
-    /* ============ HEADER DE BLOQUE: GRID ESTABLE ============ */
     .block-header-bar {
       background-color: #c0101a;
       padding: 6px 8px;
@@ -120,7 +118,6 @@
       min-width: 0;
     }
 
-    /* ============ LOGO FIX ============ */
     .logo-slot {
       width: 100%;
       height: 170px;
@@ -149,7 +146,6 @@
       box-sizing: border-box;
     }
 
-    /* ============ FILA DE CANCIÓN: NÚMERO ANCHO FIJO ============ */
     .song-row {
       display: grid;
       grid-template-columns: 26px 1fr auto;
@@ -202,7 +198,19 @@
       letter-spacing: 0.05em;
     }
 
-    .song-note:empty { display: none; }
+    /* Permite editar nota incluso si está vacía al hacer hover */
+    .song-note:empty::before {
+      content: '+ nota';
+      opacity: 0;
+      color: #71717a;
+      transition: opacity 0.15s ease;
+    }
+    .song-row:hover .song-note:empty::before {
+      opacity: 0.6;
+    }
+    .song-note:focus::before {
+      display: none;
+    }
 
     .block-span-full {
       grid-column: 1 / -1 !important;
@@ -220,6 +228,9 @@
     }
 
     .exporting .edit-only-control {
+      display: none !important;
+    }
+    .exporting .song-note:empty::before {
       display: none !important;
     }
   </style>
@@ -274,6 +285,7 @@
       <h2 id="posterSubtitle"
           contenteditable="true"
           onblur="updateSubtitle(this.innerText)"
+          onkeydown="preventMultiline(event)"
           class="font-bebas text-4xl sm:text-5xl tracking-[0.24em] pl-[0.24em] text-[#dfd8c8] uppercase leading-[1.15] py-1 select-none">
         SETLIST OFICIAL
       </h2>
@@ -318,7 +330,7 @@
   </div>
 
   <!-- MODAL: Logo -->
-  <div id="logoModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
+  <div id="logoModal" class="modal-backdrop fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3" onclick="handleBackdropClick(event, 'logoModal')">
     <div class="bg-zinc-900 border border-red-900/60 rounded-xl max-w-sm w-full p-4 shadow-2xl">
       <div class="flex justify-between items-center mb-3 pb-2 border-b border-zinc-800">
         <h3 class="font-bebas text-xl text-white tracking-wide">CONFIGURACIÓN DE LOGO</h3>
@@ -329,13 +341,13 @@
 
       <div class="space-y-3">
         <div>
-          <label class="block text-[11px] font-bold uppercase text-zinc-400 mb-1">1. Subir imagen desde tu celular o PC</label>
+          <label class="block text-[11px] font-bold uppercase text-zinc-400 mb-1">1. Subir imagen (se optimizará)</label>
           <input type="file" id="logoFileInput" accept="image/*" class="w-full text-xs text-zinc-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-red-600 file:text-white hover:file:bg-red-700 cursor-pointer">
-          <p class="text-[10px] text-zinc-500 mt-1">Se guardará automáticamente en tu navegador.</p>
+          <p class="text-[10px] text-zinc-500 mt-1">Se redimensiona para no saturar la memoria local.</p>
         </div>
 
         <div>
-          <label class="block text-[11px] font-bold uppercase text-zinc-400 mb-1">2. O ruta relativa en GitHub</label>
+          <label class="block text-[11px] font-bold uppercase text-zinc-400 mb-1">2. O ruta relativa / URL externa</label>
           <input type="text" id="inputLogoUrl" placeholder="logo.png" class="w-full bg-zinc-800 border border-zinc-700 rounded px-2.5 py-1.5 text-white text-xs font-mono focus:outline-none focus:border-red-500">
         </div>
 
@@ -345,7 +357,7 @@
           </button>
           <button onclick="restoreOriginalLogo()" class="w-full py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-semibold rounded text-xs transition flex items-center justify-center gap-1.5 border border-zinc-700">
             <i class="fa-solid fa-rotate-left text-amber-500 text-[11px]"></i>
-            <span>Restablecer a logo.png relativo</span>
+            <span>Restablecer a logo.png</span>
           </button>
         </div>
       </div>
@@ -353,7 +365,7 @@
   </div>
 
   <!-- MODAL: Bulk -->
-  <div id="bulkModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
+  <div id="bulkModal" class="modal-backdrop fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3" onclick="handleBackdropClick(event, 'bulkModal')">
     <div class="bg-zinc-900 border border-red-900/60 rounded-xl max-w-md w-full p-4 shadow-2xl">
       <div class="flex justify-between items-center mb-2 pb-2 border-b border-zinc-800">
         <h3 class="font-bebas text-xl text-white tracking-wide">PEGAR CANCIONES EN EL BLOQUE</h3>
@@ -362,9 +374,7 @@
         </button>
       </div>
       <p class="text-[11px] text-zinc-400 mb-2">Pega la lista de canciones (una por línea):</p>
-      <textarea id="bulkTextarea" rows="6" class="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-white text-xs focus:outline-none focus:border-red-500 font-mono" placeholder="De música ligera
-Te vi en un tren
-Hombre lobo en París"></textarea>
+      <textarea id="bulkTextarea" rows="6" class="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-white text-xs focus:outline-none focus:border-red-500 font-mono" placeholder="De música ligera&#10;Te vi en un tren&#10;Hombre lobo en París"></textarea>
       <div class="mt-3 flex gap-2">
         <button onclick="closeBulkModal()" class="flex-1 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold rounded text-xs transition">
           Cancelar
@@ -377,7 +387,7 @@ Hombre lobo en París"></textarea>
   </div>
 
   <!-- MODAL: JSON EXPORT -->
-  <div id="jsonExportModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
+  <div id="jsonExportModal" class="modal-backdrop fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3" onclick="handleBackdropClick(event, 'jsonExportModal')">
     <div class="bg-zinc-900 border border-zinc-700 rounded-xl max-w-md w-full p-4 shadow-2xl">
       <div class="flex justify-between items-center mb-3 pb-2 border-b border-zinc-800">
         <div class="flex items-center gap-1.5">
@@ -413,7 +423,7 @@ Hombre lobo en París"></textarea>
   </div>
 
   <!-- MODAL: JSON IMPORT -->
-  <div id="jsonImportModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
+  <div id="jsonImportModal" class="modal-backdrop fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3" onclick="handleBackdropClick(event, 'jsonImportModal')">
     <div class="bg-zinc-900 border border-zinc-700 rounded-xl max-w-md w-full p-4 shadow-2xl">
       <div class="flex justify-between items-center mb-3 pb-2 border-b border-zinc-800">
         <div class="flex items-center gap-1.5">
@@ -486,7 +496,7 @@ Hombre lobo en París"></textarea>
         {
           id: "b3", title: "BLOQUE 3", badge: "3",
           songs: [
-            { id: "s17", name: "Mas allá del bien y del mal", note: "" },
+            { id: "s17", name: "Más allá del bien y del mal", note: "" },
             { id: "s18", name: "Sentimiento fatal", note: "" },
             { id: "s19", name: "Y es que sucede así", note: "" },
             { id: "s20", name: "Suna", note: "" },
@@ -509,11 +519,11 @@ Hombre lobo en París"></textarea>
         {
           id: "b5", title: "BLOQUE 5", badge: "5",
           songs: [
-            { id: "s30", name: "Me resfríe en Brasil", note: "" },
+            { id: "s30", name: "Me resfrié en Brasil", note: "" },
             { id: "s31", name: "Los globos del cielo", note: "" },
             { id: "s32", name: "Es por amor", note: "" },
-            { id: "s33", name: "La voz de los 80s", note: "" },
-            { id: "s34", name: "Take on me", note: "" }
+            { id: "s33", name: "La voz de los 80", note: "" },
+            { id: "s34", name: "Take On Me", note: "" }
           ]
         }
       ]
@@ -522,6 +532,38 @@ Hombre lobo en París"></textarea>
     const STORAGE_KEY = "colapso_setlist_storage_v5";
     let appData = null;
     let targetBlockIdForBulk = null;
+
+    function escapeHtml(text) {
+      if (!text) return "";
+      return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function preventMultiline(e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        e.target.blur();
+      }
+    }
+
+    function handleBackdropClick(e, modalId) {
+      if (e.target.id === modalId) {
+        document.getElementById(modalId).classList.add("hidden");
+      }
+    }
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeLogoModal();
+        closeBulkModal();
+        closeJsonExportModal();
+        closeJsonImportModal();
+      }
+    });
 
     function initData() {
       try {
@@ -552,7 +594,10 @@ Hombre lobo en París"></textarea>
           statusEl.innerText = "Sincronizado";
           statusEl.className = "text-[10px] font-bold uppercase tracking-wider text-zinc-400 bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700";
         }, 1200);
-      } catch (e) { console.error("Save error:", e); }
+      } catch (e) {
+        console.error("Save error:", e);
+        showToast("Error al guardar en memoria local (cuota llena)", "error");
+      }
     }
 
     function createSongRow(block, song, songIdx, displayNumber) {
@@ -563,24 +608,26 @@ Hombre lobo en París"></textarea>
         <span class="song-num">${displayNumber}.</span>
         <div class="min-w-0">
           <span contenteditable="true"
+                onkeydown="preventMultiline(event)"
                 onblur="updateSongName('${block.id}', '${song.id}', this.innerText)"
-                class="song-name block">${song.name || "Canción"}</span>
+                class="song-name block">${escapeHtml(song.name) || "Canción"}</span>
           <span contenteditable="true"
+                onkeydown="preventMultiline(event)"
                 onblur="updateSongNote('${block.id}', '${song.id}', this.innerText)"
-                class="song-note inline-block empty:hidden">${song.note || ""}</span>
+                class="song-note inline-block">${escapeHtml(song.note || "")}</span>
         </div>
       `;
 
       const controls = document.createElement('div');
       controls.className = "edit-only-control flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ml-1 self-center";
       controls.innerHTML = `
-        <button onclick="moveSong('${block.id}', '${song.id}', -1)" ${songIdx === 0 ? 'disabled' : ''} class="p-0.5 text-zinc-500 hover:text-white disabled:opacity-20 text-[9px]">
+        <button onclick="moveSong('${block.id}', '${song.id}', -1)" ${songIdx === 0 ? 'disabled' : ''} class="p-0.5 text-zinc-500 hover:text-white disabled:opacity-20 text-[9px]" title="Subir">
           <i class="fa-solid fa-chevron-up"></i>
         </button>
-        <button onclick="moveSong('${block.id}', '${song.id}', 1)" ${songIdx === block.songs.length - 1 ? 'disabled' : ''} class="p-0.5 text-zinc-500 hover:text-white disabled:opacity-20 text-[9px]">
+        <button onclick="moveSong('${block.id}', '${song.id}', 1)" ${songIdx === block.songs.length - 1 ? 'disabled' : ''} class="p-0.5 text-zinc-500 hover:text-white disabled:opacity-20 text-[9px]" title="Bajar">
           <i class="fa-solid fa-chevron-down"></i>
         </button>
-        <button onclick="deleteSong('${block.id}', '${song.id}')" class="p-0.5 text-zinc-600 hover:text-red-400 text-[10px]">
+        <button onclick="deleteSong('${block.id}', '${song.id}')" class="p-0.5 text-zinc-600 hover:text-red-400 text-[10px]" title="Eliminar">
           <i class="fa-solid fa-xmark"></i>
         </button>
       `;
@@ -617,7 +664,7 @@ Hombre lobo en París"></textarea>
 
         const titleEl = document.createElement('div');
         titleEl.className = "block-title-text";
-        titleEl.innerHTML = `<span class="select-none" style="color:#000;font-weight:900;">-&nbsp;</span><span contenteditable="true" onblur="updateBlockTitle('${block.id}', this.innerText)">${block.title}</span>`;
+        titleEl.innerHTML = `<span class="select-none" style="color:#000;font-weight:900;">-&nbsp;</span><span contenteditable="true" onkeydown="preventMultiline(event)" onblur="updateBlockTitle('${block.id}', this.innerText)">${escapeHtml(block.title)}</span>`;
 
         const actionsDiv = document.createElement('div');
         actionsDiv.className = "edit-only-control flex items-center gap-1 text-[10px] flex-shrink-0";
@@ -625,13 +672,13 @@ Hombre lobo en París"></textarea>
           <button onclick="openBulkModalForBlock('${block.id}')" class="p-0.5 px-1 bg-black/40 hover:bg-black/70 text-white rounded" title="Pegar canciones">
             <i class="fa-solid fa-paste"></i>
           </button>
-          <button onclick="moveBlock('${block.id}', -1)" ${blockIndex === 0 ? 'disabled' : ''} class="p-0.5 px-1 bg-black/40 hover:bg-black/70 disabled:opacity-20 text-white rounded">
+          <button onclick="moveBlock('${block.id}', -1)" ${blockIndex === 0 ? 'disabled' : ''} class="p-0.5 px-1 bg-black/40 hover:bg-black/70 disabled:opacity-20 text-white rounded" title="Subir bloque">
             <i class="fa-solid fa-arrow-up"></i>
           </button>
-          <button onclick="moveBlock('${block.id}', 1)" ${blockIndex === appData.blocks.length - 1 ? 'disabled' : ''} class="p-0.5 px-1 bg-black/40 hover:bg-black/70 disabled:opacity-20 text-white rounded">
+          <button onclick="moveBlock('${block.id}', 1)" ${blockIndex === appData.blocks.length - 1 ? 'disabled' : ''} class="p-0.5 px-1 bg-black/40 hover:bg-black/70 disabled:opacity-20 text-white rounded" title="Bajar bloque">
             <i class="fa-solid fa-arrow-down"></i>
           </button>
-          <button onclick="deleteBlock('${block.id}')" class="p-0.5 px-1 bg-black/40 hover:bg-black text-red-300 hover:text-white rounded">
+          <button onclick="deleteBlock('${block.id}')" class="p-0.5 px-1 bg-black/40 hover:bg-black text-red-300 hover:text-white rounded" title="Eliminar bloque">
             <i class="fa-solid fa-trash-can"></i>
           </button>
         `;
@@ -793,9 +840,9 @@ Hombre lobo en París"></textarea>
       const raw = document.getElementById('bulkTextarea').value;
       const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
       if (lines.length === 0) { closeBulkModal(); return; }
-      lines.forEach(line => {
+      lines.forEach((line, idx) => {
         let clean = line.replace(/^\d+[\.\-\s)]+/, '').trim();
-        block.songs.push({ id: "s_" + Math.random().toString(36).substr(2, 9), name: clean || "Canción", note: "" });
+        block.songs.push({ id: "s_" + Date.now() + "_" + idx, name: clean || "Canción", note: "" });
       });
       saveData(); renderAll(); closeBulkModal();
       showToast(`${lines.length} temas añadidos`);
@@ -807,14 +854,37 @@ Hombre lobo en París"></textarea>
     }
     function closeLogoModal() { document.getElementById('logoModal').classList.add('hidden'); }
 
+    // Compresión y guardado optimizado de imagen
     document.getElementById('logoFileInput').addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (!file) return;
+
       const reader = new FileReader();
       reader.onload = function(evt) {
-        appData.customLogo = evt.target.result;
-        saveData(); applyLogoState(); closeLogoModal();
-        showToast("¡Logo cargado exitosamente!");
+        const tempImg = new Image();
+        tempImg.onload = function() {
+          const maxDim = 600;
+          let w = tempImg.width;
+          let h = tempImg.height;
+          if (w > maxDim || h > maxDim) {
+            if (w > h) {
+              h = Math.round((h * maxDim) / w);
+              w = maxDim;
+            } else {
+              w = Math.round((w * maxDim) / h);
+              h = maxDim;
+            }
+          }
+          const cvs = document.createElement('canvas');
+          cvs.width = w;
+          cvs.height = h;
+          const ctx = cvs.getContext('2d');
+          ctx.drawImage(tempImg, 0, 0, w, h);
+          appData.customLogo = cvs.toDataURL('image/png', 0.85);
+          saveData(); applyLogoState(); closeLogoModal();
+          showToast("¡Logo cargado y optimizado!");
+        };
+        tempImg.src = evt.target.result;
       };
       reader.readAsDataURL(file);
     });
@@ -876,11 +946,20 @@ Hombre lobo en París"></textarea>
         showToast("Archivo JSON descargado");
       } catch (e) { showToast("Error al generar JSON", "error"); }
     }
-    function copyJsonToClipboard() {
-      const ta = document.getElementById('jsonExportTextarea');
-      ta.select();
-      try { document.execCommand('copy'); showToast("¡JSON copiado!"); }
-      catch (err) { showToast("Copia manualmente", "warning"); }
+    async function copyJsonToClipboard() {
+      const text = document.getElementById('jsonExportTextarea').value;
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const ta = document.getElementById('jsonExportTextarea');
+          ta.select();
+          document.execCommand('copy');
+        }
+        showToast("¡JSON copiado al portapapeles!");
+      } catch (err) {
+        showToast("Copia manualmente el texto", "warning");
+      }
     }
 
     // ===== JSON IMPORT =====
@@ -963,11 +1042,8 @@ Hombre lobo en París"></textarea>
           useCORS: true,
           allowTaint: false,
           logging: false,
-          imageTimeout: 5000,
-          width: posterNode.offsetWidth,
-          height: posterNode.offsetHeight,
-          windowWidth: posterNode.offsetWidth,
-          windowHeight: posterNode.offsetHeight,
+          scrollX: 0,
+          scrollY: 0,
           onclone: (clonedDoc) => {
             clonedDoc.querySelectorAll('.edit-only-control').forEach(el => {
               el.style.display = 'none';
