@@ -991,47 +991,85 @@ Hombre lobo en París"></textarea>
       }
     }
 
-    async function exportAsImage() {
-      const posterNode = document.getElementById('setlistPoster');
-      showToast("Generando imagen con renderizado nativo...", "info");
+    async function exportAsImage() async function exportAsImage() {
+  const posterNode = document.getElementById('setlistPoster');
+  showToast("Generando imagen...", "info");
 
-      try {
-        if (document.fonts && document.fonts.ready) {
-          await document.fonts.ready;
-        }
+  // 1) Ocultar controles con CSS en lugar de `filter:`
+  //    (el callback filter es la causa #1 de PNG negro en html-to-image)
+  const hideStyle = document.createElement('style');
+  hideStyle.id = 'export-hide-controls';
+  hideStyle.textContent = '.edit-only-control{display:none !important;}';
+  document.head.appendChild(hideStyle);
 
-        const logoImg = document.getElementById('customLogoImg');
-        if (logoImg && !logoImg.complete && !logoImg.classList.contains('hidden')) {
-          await new Promise((resolve) => {
-            logoImg.onload = resolve;
-            logoImg.onerror = resolve;
-          });
-        }
+  try {
+    // 2) Esperar a que las fuentes estén listas
+    if (document.fonts && document.fonts.ready) {
+      await document.fonts.ready;
+    }
 
-        const dataUrl = await htmlToImage.toPng(posterNode, {
-          pixelRatio: 2.5,
-          backgroundColor: '#060607',
-          cacheBust: true,
-          filter: (node) => {
-            if (node.classList && node.classList.contains('edit-only-control')) {
-              return false;
-            }
-            return true;
-          }
-        });
+    // 3) Convertir el logo a data URL (evita cualquier fetch externo)
+    const logoImg = document.getElementById('customLogoImg');
+    if (logoImg && !logoImg.classList.contains('hidden') && logoImg.src) {
+      await new Promise((resolve) => {
+        if (logoImg.complete && logoImg.naturalWidth > 0) return resolve();
+        const t = setTimeout(resolve, 2500);
+        logoImg.onload  = () => { clearTimeout(t); resolve(); };
+        logoImg.onerror = () => { clearTimeout(t); resolve(); };
+      });
 
-        const link = document.createElement('a');
-        link.download = `setlist-colapso-${Date.now()}.png`;
-        link.href = dataUrl;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        showToast("¡Póster descargado en alta resolución!", "success");
-      } catch (err) {
-        console.error("Export error:", err);
-        showToast("Error al generar imagen: " + (err.message || ""), "error");
+      if (logoImg.complete && logoImg.naturalWidth > 0 && !logoImg.src.startsWith('data:')) {
+        try {
+          const c = document.createElement('canvas');
+          c.width  = logoImg.naturalWidth;
+          c.height = logoImg.naturalHeight;
+          c.getContext('2d').drawImage(logoImg, 0, 0);
+          logoImg.src = c.toDataURL('image/png');
+        } catch (_) { /* si falla, seguimos */ }
       }
     }
+
+    // 4) Dar un tick al navegador para recalcular layout tras ocultar controles
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+    // 5) Render con opciones "seguras"
+    const dataUrl = await htmlToImage.toPng(posterNode, {
+      pixelRatio: 2,                 // 2.5 suele provocar canvas en blanco en móviles
+      cacheBust: false,              // ← CRÍTICO: no añadir ?_t=…
+      skipFonts: true,               // ← CRÍTICO: no intentar inline de Google Fonts
+      width:  posterNode.offsetWidth,
+      height: posterNode.offsetHeight,
+      style: {
+        transform: 'none',
+        margin: '0',
+        // Forzamos el fondo aquí en lugar de usar `backgroundColor`
+        background: '#060607'
+      }
+      // ⬅️ SIN `filter`, SIN `backgroundColor`
+    });
+
+    if (!dataUrl || dataUrl === 'data:,' || dataUrl.length < 200) {
+      throw new Error("Render vacío (posible logo roto o CORS)");
+    }
+
+    // 6) Descargar
+    const link = document.createElement('a');
+    link.download = `setlist-colapso-${Date.now()}.png`;
+    link.href = dataUrl;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast("¡Póster descargado!", "success");
+
+  } catch (err) {
+    console.error("Export error:", err);
+    showToast("Error al generar imagen: " + (err.message || ""), "error");
+  } finally {
+    // 7) Restaurar controles
+    const s = document.getElementById('export-hide-controls');
+    if (s) s.remove();
+  }
+}
 
     function showToast(message, type = "success") {
       const toast = document.getElementById('toast');
