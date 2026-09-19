@@ -429,76 +429,18 @@
     let realtimeChannel = null;
     let saveTimeout = null;
     let isRemoteUpdate = false;
+    let isLoading = true;
 
-    const INITIAL_STATE = {
+    // Estado base sin canciones hardcodeadas: todo se descarga de Supabase
+    const EMPTY_STATE = {
       subtitle: "SETLIST OFICIAL",
       bandName: "COLAPSO",
       customLogo: "logo.png",
       continuousNumbering: true,
-      blocks: [
-        {
-          id: "b1", title: "BLOQUE 1", badge: "1",
-          songs: [
-            { id: "s1", name: "De música ligera", note: "" },
-            { id: "s2", name: "Te vi en un tren", note: "" },
-            { id: "s3", name: "Hombre lobo en París", note: "" },
-            { id: "s4", name: "La muralla verde", note: "" },
-            { id: "s5", name: "Cuéntame", note: "" },
-            { id: "s6", name: "Igual que ayer", note: "" },
-            { id: "s7", name: "El Che y los Rolling Stones", note: "" },
-            { id: "s8", name: "Devuélveme a mi chica", note: "" }
-          ]
-        },
-        {
-          id: "b2", title: "BLOQUE 2", badge: "2",
-          songs: [
-            { id: "s9", name: "Tren al Sur", note: "" },
-            { id: "s10", name: "La calle es su lugar", note: "" },
-            { id: "s11", name: "Luna de miel", note: "" },
-            { id: "s12", name: "Creep", note: "" },
-            { id: "s13", name: "Tu cárcel", note: "" },
-            { id: "s14", name: "Mujer amante", note: "" },
-            { id: "s15", name: "Mil horas", note: "" },
-            { id: "s16", name: "¿Por qué no se van?", note: "" }
-          ]
-        },
-        {
-          id: "b3", title: "BLOQUE 3", badge: "3",
-          songs: [
-            { id: "s17", name: "Más allá del bien y del mal", note: "" },
-            { id: "s18", name: "Sentimiento fatal", note: "" },
-            { id: "s19", name: "Y es que sucede así", note: "" },
-            { id: "s20", name: "Suna", note: "" },
-            { id: "s21", name: "Lunes por la madrugada", note: "" }
-          ]
-        },
-        {
-          id: "b4", title: "BLOQUE 4", badge: "4",
-          songs: [
-            { id: "s22", name: "Lamento boliviano", note: "" },
-            { id: "s23", name: "Sexo", note: "" },
-            { id: "s24", name: "La universidad", note: "" },
-            { id: "s25", name: "Ya no quiero más ska", note: "" },
-            { id: "s26", name: "Triciclo Perú", note: "" },
-            { id: "s27", name: "Magdalena", note: "" },
-            { id: "s28", name: "La guitarra", note: "" },
-            { id: "s29", name: "ENCORE / 'YAPA'", note: "" }
-          ]
-        },
-        {
-          id: "b5", title: "BLOQUE 5", badge: "5",
-          songs: [
-            { id: "s30", name: "Me resfrié en Brasil", note: "" },
-            { id: "s31", name: "Los globos del cielo", note: "" },
-            { id: "s32", name: "Es por amor", note: "" },
-            { id: "s33", name: "La voz de los 80", note: "" },
-            { id: "s34", name: "Take On Me", note: "" }
-          ]
-        }
-      ]
+      blocks: []
     };
 
-    let appData = JSON.parse(JSON.stringify(INITIAL_STATE));
+    let appData = JSON.parse(JSON.stringify(EMPTY_STATE));
     let targetBlockIdForBulk = null;
 
     function escapeHtml(text) {
@@ -534,6 +476,7 @@
     async function initSupabase() {
       if (!SUPABASE_URL || !SUPABASE_KEY || SUPABASE_URL.includes("tu-proyecto") || SUPABASE_KEY.includes("tu-anon-key")) {
         updateSyncStatus("config_needed");
+        isLoading = false;
         renderAll();
         return;
       }
@@ -543,7 +486,7 @@
         const { createClient } = window.supabase;
         supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // 1. Cargar datos remotos
+        // 1. Cargar datos remotos exclusivamente desde Supabase
         const { data, error } = await supabaseClient
           .from("setlists")
           .select("data")
@@ -558,14 +501,15 @@
           appData = data.data;
           updateSyncStatus("synced");
         } else {
-          // Si no existe aún la fila, la creamos
+          // Si la fila aún no existe, inicializar vacío
           await supabaseClient
             .from("setlists")
-            .insert({ id: SETLIST_DOCUMENT_ID, data: INITIAL_STATE });
-          appData = JSON.parse(JSON.stringify(INITIAL_STATE));
+            .insert({ id: SETLIST_DOCUMENT_ID, data: EMPTY_STATE });
+          appData = JSON.parse(JSON.stringify(EMPTY_STATE));
           updateSyncStatus("synced");
         }
 
+        isLoading = false;
         applyLogoState();
         renderAll();
 
@@ -573,6 +517,7 @@
         setupRealtime();
       } catch (err) {
         console.error("Init Supabase error:", err);
+        isLoading = false;
         updateSyncStatus("error");
         showToast("Fallo al inicializar Supabase", "error");
       }
@@ -713,6 +658,26 @@
 
       document.getElementById('posterSubtitle').innerText = appData.subtitle || "SETLIST OFICIAL";
       document.getElementById('footerBandName').innerText = (appData.bandName || "COLAPSO") + " ROCK BAND";
+
+      if (isLoading) {
+        container.innerHTML = `
+          <div class="col-span-2 text-center py-12">
+            <i class="fa-solid fa-circle-notch fa-spin text-red-500 text-3xl mb-3"></i>
+            <p class="font-bebas text-xl tracking-widest text-zinc-400">CARGANDO SETLIST DESDE SUPABASE...</p>
+          </div>
+        `;
+        return;
+      }
+
+      if (!appData.blocks || appData.blocks.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-2 text-center py-8 border border-dashed border-zinc-800 rounded bg-zinc-950/40">
+            <p class="font-bebas text-lg tracking-wider text-zinc-400">NO HAY BLOQUES DISPONIBLES</p>
+            <p class="text-xs text-zinc-500 mt-1 font-mono">Ejecuta el query SQL en Supabase o pulsa "Agregar Nuevo Bloque"</p>
+          </div>
+        `;
+        return;
+      }
 
       const totalBlocks = appData.blocks.length;
       const isOddTotal = (totalBlocks % 2 !== 0);
