@@ -41,15 +41,31 @@
       font-family: 'Montserrat', sans-serif;
     }
 
+    /* Mobile: casi todo el ancho. Desktop: hasta 900px centrado */
     .poster-outer-frame {
       width: 100%;
-      max-width: 550px;
+      max-width: 100%;
       margin: 0 auto;
       background-color: #060607;
       border: 3px solid #1a1a1e;
       outline: 2px solid #c0101a;
       box-shadow: 0 12px 45px rgba(0,0,0,0.95), 0 0 35px rgba(192, 16, 26, 0.25);
       box-sizing: border-box;
+      padding: 12px;
+    }
+
+    @media (min-width: 640px) {
+      .poster-outer-frame {
+        max-width: 820px;
+        padding: 18px;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .poster-outer-frame {
+        max-width: 900px;
+        padding: 22px;
+      }
     }
 
     .block-card {
@@ -72,7 +88,6 @@
       box-sizing: border-box;
     }
 
-    /* Badge circular: flex con tamaño fijo, sin dependencias de inline-flex */
     .badge-circle {
       display: flex;
       align-items: center;
@@ -91,7 +106,6 @@
       flex-shrink: 0;
     }
 
-    /* Texto del título: un solo contenedor, sin anidar flex */
     .block-title-text {
       font-family: 'Oswald', 'Montserrat', sans-serif;
       font-weight: 900;
@@ -119,6 +133,10 @@
       flex-shrink: 0;
     }
 
+    @media (min-width: 640px) {
+      .logo-slot { height: 220px; }
+    }
+
     .band-logo-img {
       width: 100% !important;
       height: 100% !important;
@@ -131,20 +149,20 @@
       box-sizing: border-box;
     }
 
-    /* ============ FILA DE CANCIÓN: NÚMERO CON ANCHO FIJO ============ */
+    /* ============ FILA DE CANCIÓN: NÚMERO ANCHO FIJO ============ */
     .song-row {
       display: grid;
-      grid-template-columns: 22px 1fr auto;
+      grid-template-columns: 26px 1fr auto;
       align-items: baseline;
-      column-gap: 4px;
-      padding: 1.5px 4px;
+      column-gap: 6px;
+      padding: 2px 4px;
       min-width: 0;
       line-height: 1.25;
     }
 
     .song-num {
       display: block;
-      width: 22px;
+      width: 26px;
       text-align: right;
       font-family: 'Bebas Neue', 'Oswald', sans-serif;
       font-weight: 900;
@@ -153,6 +171,11 @@
       color: #ef4444;
       box-sizing: border-box;
       flex-shrink: 0;
+    }
+
+    @media (min-width: 640px) {
+      .song-num { font-size: 18px; width: 30px; }
+      .song-row { grid-template-columns: 30px 1fr auto; }
     }
 
     .song-name {
@@ -164,6 +187,10 @@
       word-break: break-word;
       min-width: 0;
       line-height: 1.3;
+    }
+
+    @media (min-width: 640px) {
+      .song-name { font-size: 13.5px; }
     }
 
     .song-note {
@@ -192,17 +219,16 @@
       border-radius: 2px;
     }
 
-    /* Ocultar controles durante el render */
     .exporting .edit-only-control {
       display: none !important;
     }
   </style>
 </head>
 
-<body class="text-zinc-100 min-h-screen flex flex-col items-center p-2 sm:p-5">
+<body class="text-zinc-100 min-h-screen flex flex-col items-center p-1.5 sm:p-4 lg:p-6">
 
   <!-- Floating Control Bar -->
-  <header class="edit-only-control sticky top-2 z-50 w-full max-w-[550px] bg-zinc-900/95 backdrop-blur-md border border-zinc-800 rounded-xl p-2.5 mb-3.5 shadow-2xl">
+  <header class="edit-only-control sticky top-2 z-50 w-full max-w-full sm:max-w-[820px] lg:max-w-[900px] bg-zinc-900/95 backdrop-blur-md border border-zinc-800 rounded-xl p-2.5 mb-3.5 shadow-2xl">
     <div class="flex flex-wrap items-center justify-between gap-2">
       <div class="flex items-center gap-2">
         <span class="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse"></span>
@@ -242,7 +268,7 @@
   </header>
 
   <!-- MAIN POSTER -->
-  <div id="setlistPoster" class="poster-outer-frame rounded-lg p-3 sm:p-4 relative">
+  <div id="setlistPoster" class="poster-outer-frame rounded-lg relative">
 
     <div class="w-full text-center mt-1 mb-2">
       <h2 id="posterSubtitle"
@@ -274,7 +300,7 @@
       </div>
     </div>
 
-    <div id="blocksContainer" class="grid grid-cols-2 gap-1.5 sm:gap-2 items-start"></div>
+    <div id="blocksContainer" class="grid grid-cols-2 gap-1.5 sm:gap-3 lg:gap-4 items-start"></div>
 
     <div class="edit-only-control mt-2.5 text-center">
       <button onclick="addNewBlock()" class="w-full py-1.5 border border-dashed border-red-900/70 hover:border-red-500 bg-red-950/20 hover:bg-red-950/40 text-red-400 hover:text-red-200 rounded font-bold text-xs tracking-wider transition flex items-center justify-center gap-1.5">
@@ -533,7 +559,6 @@ Hombre lobo en París"></textarea>
       const row = document.createElement('div');
       row.className = "song-row group hover:bg-zinc-900/90 rounded transition";
 
-      // Numero con ancho fijo + nombre + nota + controles
       row.innerHTML = `
         <span class="song-num">${displayNumber}.</span>
         <div class="min-w-0">
@@ -583,7 +608,6 @@ Hombre lobo en París"></textarea>
         blockEl.className = `block-card rounded relative ${spansFullWidth ? 'col-span-2 block-span-full' : 'col-span-1'}`;
         blockEl.id = `block-${block.id}`;
 
-        // Header con grid: badge (22px) + título (1fr) + acciones (auto)
         const headerDiv = document.createElement('div');
         headerDiv.className = "block-header-bar";
 
