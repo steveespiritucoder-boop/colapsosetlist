@@ -4,16 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Setlist Oficial - COLAPSO</title>
-  
-  <!-- Tailwind CSS -->
+
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts: Bebas Neue, Montserrat, Oswald -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@500;600;700;800;900&family=Oswald:wght@600;700;800;900&display=swap" rel="stylesheet">
-  <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- html-to-image (Uses native SVG foreignObject for 100% pixel-perfect render with no image squishing) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
 
   <script>
@@ -45,7 +41,6 @@
       font-family: 'Montserrat', sans-serif;
     }
 
-    /* Fixed Compact Poster Frame matching real rock gig poster proportions */
     .poster-outer-frame {
       width: 100%;
       max-width: 550px;
@@ -57,7 +52,6 @@
       box-sizing: border-box;
     }
 
-    /* Block Card container with tight content wrapping */
     .block-card {
       border: 1.5px solid #c0101a;
       background: #08080a;
@@ -67,7 +61,6 @@
       overflow: visible !important;
     }
 
-    /* Solid Red Header Bar with guaranteed padding and line-height */
     .block-header-bar {
       background-color: #c0101a;
       padding: 6px 8px;
@@ -78,7 +71,6 @@
       box-sizing: border-box;
     }
 
-    /* Pixel-perfect circle number badge */
     .badge-circle {
       display: inline-flex !important;
       align-items: center !important;
@@ -101,7 +93,6 @@
       padding: 0 !important;
     }
 
-    /* Header text: Oswald bold, high-contrast black, no clipping */
     .block-title-text {
       font-family: 'Oswald', 'Montserrat', sans-serif;
       font-weight: 900;
@@ -113,24 +104,38 @@
       white-space: nowrap;
     }
 
-    /* Natural proportion preservation for logo image */
-    .band-logo-img {
-      width: auto !important;
-      height: auto !important;
-      max-width: 90% !important;
-      max-height: 180px !important;
-      object-fit: contain !important;
-      margin: 0 auto !important;
-      display: block !important;
+    /* ============ LOGO FIX ============ */
+    /* Contenedor de altura FIJA: el logo nunca puede invadir el título */
+    .logo-slot {
+      width: 100%;
+      height: 170px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      margin: 8px 0 6px 0;
+      position: relative;
+      flex-shrink: 0;
     }
 
-    /* Odd final block spanning full 2-columns */
+    /* 100%/100% + object-fit:contain => NUNCA deforma ni desborda */
+    .band-logo-img {
+      width: 100% !important;
+      height: 100% !important;
+      max-width: 100% !important;
+      max-height: 100% !important;
+      object-fit: contain !important;
+      display: block !important;
+      margin: 0 auto !important;
+      padding: 4px;
+      box-sizing: border-box;
+    }
+
     .block-span-full {
       grid-column: 1 / -1 !important;
       width: 100% !important;
     }
 
-    /* Inline editable subtle cues */
     [contenteditable="true"]:hover {
       outline: 1px dashed rgba(192, 16, 26, 0.6);
       cursor: text;
@@ -145,10 +150,9 @@
 
 <body class="text-zinc-100 min-h-screen flex flex-col items-center p-2 sm:p-5">
 
-  <!-- Floating Control Bar -->
+  <!-- Floating Control Bar (arriba) -->
   <header class="edit-only-control sticky top-2 z-50 w-full max-w-[550px] bg-zinc-900/95 backdrop-blur-md border border-zinc-800 rounded-xl p-2.5 mb-3.5 shadow-2xl">
     <div class="flex flex-wrap items-center justify-between gap-2">
-      <!-- Status Indicator -->
       <div class="flex items-center gap-2">
         <span class="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse"></span>
         <span class="font-bebas text-lg tracking-wider text-white">COLAPSO SETLIST</span>
@@ -157,7 +161,6 @@
         </span>
       </div>
 
-      <!-- Action Buttons -->
       <div class="flex flex-wrap items-center gap-1.5">
         <button onclick="addNewBlock()" class="flex items-center gap-1 px-2.5 py-1 bg-zinc-800 hover:bg-zinc-700 text-red-400 font-bold text-xs rounded border border-red-900/50 transition active:scale-95" title="Añadir nuevo bloque de canciones">
           <i class="fa-solid fa-plus text-[10px]"></i>
@@ -169,9 +172,14 @@
           <span>Logo</span>
         </button>
 
-        <button onclick="openJsonModal()" class="flex items-center gap-1 px-2.5 py-1 bg-zinc-800 hover:bg-zinc-700 text-cyan-400 text-xs rounded border border-zinc-700 transition active:scale-95" title="Compartir o restaurar archivo JSON con la banda">
-          <i class="fa-solid fa-file-code text-[10px]"></i>
-          <span>JSON</span>
+        <button onclick="openJsonImportModal()" class="flex items-center gap-1 px-2.5 py-1 bg-zinc-800 hover:bg-zinc-700 text-emerald-400 text-xs rounded border border-zinc-700 transition active:scale-95" title="Importar setlist desde JSON">
+          <i class="fa-solid fa-file-import text-[10px]"></i>
+          <span>Importar</span>
+        </button>
+
+        <button onclick="openJsonExportModal()" class="flex items-center gap-1 px-2.5 py-1 bg-zinc-800 hover:bg-zinc-700 text-cyan-400 text-xs rounded border border-zinc-700 transition active:scale-95" title="Exportar setlist como JSON">
+          <i class="fa-solid fa-file-export text-[10px]"></i>
+          <span>Exportar</span>
         </button>
 
         <button onclick="exportAsImage()" class="flex items-center gap-1.5 px-3 py-1 bg-red-600 hover:bg-red-700 text-white font-black text-xs rounded shadow shadow-red-950 transition active:scale-95">
@@ -182,50 +190,45 @@
     </div>
   </header>
 
-  <!-- MAIN POSTER CONTAINER (Target for html-to-image) -->
+  <!-- MAIN POSTER -->
   <div id="setlistPoster" class="poster-outer-frame rounded-lg p-3 sm:p-4 relative transition-all">
-    
-    <!-- HEADER AREA: Vintage Poster Header -->
+
     <div class="w-full text-center mt-1 mb-2">
-      
-      <!-- Top Title: "SETLIST OFICIAL" in Large Vintage Beige with ample line-height -->
-      <h2 id="posterSubtitle" 
-          contenteditable="true" 
-          onblur="updateSubtitle(this.innerText)" 
-          class="font-bebas text-4xl sm:text-5xl tracking-[0.24em] text-[#dfd8c8] uppercase leading-[1.15] py-1 select-none drop-shadow">
+      <h2 id="posterSubtitle"
+          contenteditable="true"
+          onblur="updateSubtitle(this.innerText)"
+          class="font-bebas text-4xl sm:text-5xl tracking-[0.24em] pl-[0.24em] text-[#dfd8c8] uppercase leading-[1.15] py-1 select-none">
         SETLIST OFICIAL
       </h2>
 
-      <!-- BAND LOGO CONTAINER (Direct <img> pointing to logo.png with natural proportion preservation) -->
-      <div id="logoContainer" class="my-2 min-h-[90px] w-full flex items-center justify-center relative group">
-        <img id="customLogoImg" 
-             src="logo.png" 
-             alt="Logo Oficial COLAPSO" 
-             class="band-logo-img cursor-pointer drop-shadow-2xl transition-transform hover:scale-[1.01]" 
+      <!-- LOGO SLOT -->
+      <div id="logoContainer" class="logo-slot group">
+        <img id="customLogoImg"
+             src="logo.png"
+             alt="Logo Oficial COLAPSO"
+             class="band-logo-img cursor-pointer"
              onclick="openLogoModal()"
              title="Click para cambiar logo o subir tu archivo">
 
-        <!-- Fallback Placeholder if logo.png is not found -->
-        <div id="logoFallbackPlaceholder" class="hidden flex-col items-center justify-center p-3 border-2 border-dashed border-red-800/80 bg-red-950/20 rounded cursor-pointer w-[90%] py-5 text-center" onclick="openLogoModal()">
+        <div id="logoFallbackPlaceholder"
+             class="hidden flex-col items-center justify-center p-3 border-2 border-dashed border-red-800/80 bg-red-950/20 rounded cursor-pointer absolute inset-1 text-center"
+             onclick="openLogoModal()">
           <i class="fa-solid fa-arrow-up-from-bracket text-red-500 text-xl mb-1.5"></i>
           <span class="font-bebas text-xl text-vintageBeige tracking-wider">CLICK PARA SUBIR LOGO.PNG</span>
           <span class="text-[10px] text-zinc-400 font-mono">O coloca logo.png en tu carpeta de GitHub</span>
         </div>
 
-        <!-- Floating Edit Button on Hover -->
-        <button onclick="openLogoModal()" class="edit-only-control absolute right-1 top-0 bg-zinc-900/90 hover:bg-red-600 text-zinc-300 hover:text-white px-2 py-0.5 rounded text-[11px] opacity-0 group-hover:opacity-100 transition shadow">
+        <button onclick="openLogoModal()"
+                class="edit-only-control absolute right-1 top-1 bg-zinc-900/90 hover:bg-red-600 text-zinc-300 hover:text-white px-2 py-0.5 rounded text-[11px] opacity-0 group-hover:opacity-100 transition shadow z-10">
           <i class="fa-solid fa-pen-to-square"></i> Cambiar
         </button>
       </div>
-
     </div>
 
-    <!-- DYNAMIC 2-COLUMN SETLIST BLOCKS (Compact start-aligned grid) -->
     <div id="blocksContainer" class="grid grid-cols-2 gap-1.5 sm:gap-2 items-start">
-      <!-- Dynamic block cards rendered here via JavaScript -->
+      <!-- bloques dinámicos -->
     </div>
 
-    <!-- Add Block Action inside Poster (Filtered during export) -->
     <div class="edit-only-control mt-2.5 text-center">
       <button onclick="addNewBlock()" class="w-full py-1.5 border border-dashed border-red-900/70 hover:border-red-500 bg-red-950/20 hover:bg-red-950/40 text-red-400 hover:text-red-200 rounded font-bold text-xs tracking-wider transition flex items-center justify-center gap-1.5">
         <i class="fa-solid fa-circle-plus text-sm"></i>
@@ -233,7 +236,6 @@
       </button>
     </div>
 
-    <!-- Poster Authentic Footer -->
     <div class="mt-3.5 pt-2 border-t border-zinc-900/90 flex justify-between items-center text-[9px] text-zinc-500 uppercase tracking-widest font-mono select-none">
       <span id="footerBandName">COLAPSO ROCK BAND</span>
       <span id="footerDate">19 SEPT 2026</span>
@@ -242,19 +244,7 @@
 
   </div>
 
-  <!-- Bottom Quick Actions for Mobile -->
-  <div class="edit-only-control mt-3.5 w-full max-w-[550px] flex gap-2">
-    <button onclick="exportAsImage()" class="flex-1 py-2.5 px-4 bg-red-600 hover:bg-red-700 active:scale-98 text-white font-black text-xs sm:text-sm tracking-wider rounded shadow-lg shadow-red-950/70 transition flex items-center justify-center gap-2">
-      <i class="fa-solid fa-file-image text-sm"></i>
-      <span>DESCARGAR IMAGEN (PNG)</span>
-    </button>
-    <button onclick="window.print()" class="py-2.5 px-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-xs rounded border border-zinc-700 transition flex items-center justify-center gap-1.5">
-      <i class="fa-solid fa-print"></i>
-      <span>Imprimir</span>
-    </button>
-  </div>
-
-  <!-- MODAL: Logo Settings -->
+  <!-- MODAL: Logo -->
   <div id="logoModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
     <div class="bg-zinc-900 border border-red-900/60 rounded-xl max-w-sm w-full p-4 shadow-2xl">
       <div class="flex justify-between items-center mb-3 pb-2 border-b border-zinc-800">
@@ -289,7 +279,7 @@
     </div>
   </div>
 
-  <!-- MODAL: Bulk Song Import -->
+  <!-- MODAL: Bulk import -->
   <div id="bulkModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
     <div class="bg-zinc-900 border border-red-900/60 rounded-xl max-w-md w-full p-4 shadow-2xl">
       <div class="flex justify-between items-center mb-2 pb-2 border-b border-zinc-800">
@@ -300,7 +290,6 @@
       </div>
 
       <p class="text-[11px] text-zinc-400 mb-2">Pega la lista de canciones (una por línea):</p>
-      
       <textarea id="bulkTextarea" rows="6" class="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-white text-xs focus:outline-none focus:border-red-500 font-mono" placeholder="De música ligera
 Te vi en un tren
 Hombre lobo en París"></textarea>
@@ -316,67 +305,81 @@ Hombre lobo en París"></textarea>
     </div>
   </div>
 
-  <!-- MODAL: Import / Export JSON Template -->
-  <div id="jsonModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
-    <div class="bg-zinc-900 border border-zinc-700 rounded-xl max-w-md w-full p-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+  <!-- MODAL: JSON EXPORT -->
+  <div id="jsonExportModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
+    <div class="bg-zinc-900 border border-zinc-700 rounded-xl max-w-md w-full p-4 shadow-2xl">
       <div class="flex justify-between items-center mb-3 pb-2 border-b border-zinc-800">
         <div class="flex items-center gap-1.5">
-          <i class="fa-solid fa-code-compare text-cyan-400 text-base"></i>
-          <h3 class="font-bebas text-xl text-white tracking-wide">COMPARTIR PLANTILLA (JSON)</h3>
+          <i class="fa-solid fa-file-export text-cyan-400 text-base"></i>
+          <h3 class="font-bebas text-xl text-white tracking-wide">EXPORTAR SETLIST (JSON)</h3>
         </div>
-        <button onclick="closeJsonModal()" class="text-zinc-400 hover:text-white text-base">
+        <button onclick="closeJsonExportModal()" class="text-zinc-400 hover:text-white text-base">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
 
-      <!-- EXPORT SECTION -->
-      <div class="bg-zinc-800/60 rounded-lg p-2.5 border border-zinc-700 mb-3">
-        <div class="flex items-center justify-between mb-1.5">
-          <span class="text-xs font-bold text-white uppercase">1. Exportar para la Banda</span>
-        </div>
-        <div class="flex gap-1.5 mb-1.5">
-          <button onclick="downloadJsonFile()" class="flex-1 py-1.5 px-2 bg-zinc-700 hover:bg-zinc-600 text-white font-semibold text-[11px] rounded flex items-center justify-center gap-1 transition">
-            <i class="fa-solid fa-download text-cyan-400"></i>
-            <span>Descargar .json</span>
-          </button>
-          <button onclick="copyJsonToClipboard()" class="flex-1 py-1.5 px-2 bg-zinc-700 hover:bg-zinc-600 text-white font-semibold text-[11px] rounded flex items-center justify-center gap-1 transition">
-            <i class="fa-solid fa-copy text-amber-400"></i>
-            <span>Copiar Código</span>
-          </button>
-        </div>
-        <textarea id="jsonExportTextarea" readonly class="w-full h-16 bg-zinc-950 border border-zinc-800 rounded p-1.5 text-zinc-400 text-[10px] font-mono select-all resize-none"></textarea>
-      </div>
+      <p class="text-[11px] text-zinc-400 mb-2">Comparte este código con la banda:</p>
 
-      <!-- IMPORT SECTION -->
-      <div class="bg-zinc-800/60 rounded-lg p-2.5 border border-zinc-700 mb-3">
-        <div class="flex items-center justify-between mb-1">
-          <span class="text-xs font-bold text-white uppercase">2. Importar Plantilla</span>
-        </div>
-        <div class="mb-2">
-          <input type="file" id="jsonFileInput" accept=".json,application/json" onchange="handleJsonFileUpload(event)" class="w-full text-xs text-zinc-400 file:mr-2 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-[11px] file:bg-zinc-700 file:text-white cursor-pointer">
-        </div>
-        <textarea id="jsonImportTextarea" rows="2" class="w-full bg-zinc-950 border border-zinc-700 rounded p-1.5 text-white text-[11px] font-mono placeholder-zinc-600 resize-none" placeholder="O pega el código JSON aquí..."></textarea>
-        <button onclick="importJsonFromTextarea()" class="mt-1.5 w-full py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs rounded transition">
-          Actualizar Setlist
+      <div class="flex gap-1.5 mb-2">
+        <button onclick="downloadJsonFile()" class="flex-1 py-1.5 px-2 bg-zinc-700 hover:bg-zinc-600 text-white font-semibold text-[11px] rounded flex items-center justify-center gap-1 transition">
+          <i class="fa-solid fa-download text-cyan-400"></i>
+          <span>Descargar .json</span>
+        </button>
+        <button onclick="copyJsonToClipboard()" class="flex-1 py-1.5 px-2 bg-zinc-700 hover:bg-zinc-600 text-white font-semibold text-[11px] rounded flex items-center justify-center gap-1 transition">
+          <i class="fa-solid fa-copy text-amber-400"></i>
+          <span>Copiar Código</span>
         </button>
       </div>
 
-      <div class="text-right">
-        <button onclick="closeJsonModal()" class="px-3 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs rounded border border-zinc-700">
+      <textarea id="jsonExportTextarea" readonly class="w-full h-52 bg-zinc-950 border border-zinc-800 rounded p-2 text-zinc-400 text-[10px] font-mono select-all resize-none"></textarea>
+
+      <div class="text-right mt-2">
+        <button onclick="closeJsonExportModal()" class="px-3 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs rounded border border-zinc-700">
           Cerrar
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Toast Notification -->
+  <!-- MODAL: JSON IMPORT -->
+  <div id="jsonImportModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
+    <div class="bg-zinc-900 border border-zinc-700 rounded-xl max-w-md w-full p-4 shadow-2xl">
+      <div class="flex justify-between items-center mb-3 pb-2 border-b border-zinc-800">
+        <div class="flex items-center gap-1.5">
+          <i class="fa-solid fa-file-import text-emerald-400 text-base"></i>
+          <h3 class="font-bebas text-xl text-white tracking-wide">IMPORTAR SETLIST (JSON)</h3>
+        </div>
+        <button onclick="closeJsonImportModal()" class="text-zinc-400 hover:text-white text-base">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <p class="text-[11px] text-zinc-400 mb-2">Sube un archivo .json o pega el código:</p>
+
+      <div class="mb-2">
+        <input type="file" id="jsonFileInput" accept=".json,application/json" onchange="handleJsonFileUpload(event)" class="w-full text-xs text-zinc-400 file:mr-2 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-[11px] file:bg-zinc-700 file:text-white cursor-pointer">
+      </div>
+
+      <textarea id="jsonImportTextarea" rows="8" class="w-full bg-zinc-950 border border-zinc-700 rounded p-2 text-white text-[11px] font-mono placeholder-zinc-600 resize-none" placeholder="O pega el código JSON aquí..."></textarea>
+
+      <div class="mt-2 flex gap-2">
+        <button onclick="closeJsonImportModal()" class="flex-1 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold rounded text-xs transition">
+          Cancelar
+        </button>
+        <button onclick="importJsonFromTextarea()" class="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded text-xs transition">
+          Aplicar Setlist
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
   <div id="toast" class="fixed bottom-4 right-4 z-50 bg-zinc-800 border border-red-600 text-white px-3.5 py-2 rounded-lg shadow-2xl transform translate-y-24 opacity-0 transition-all duration-200 flex items-center gap-2 text-xs">
     <i id="toastIcon" class="fa-solid fa-circle-check text-red-500"></i>
     <span id="toastMsg" class="font-semibold">Mensaje</span>
   </div>
 
   <script>
-    // Clean initial setlist matching authentic concert poster
     const INITIAL_STATE = {
       subtitle: "SETLIST OFICIAL",
       bandName: "COLAPSO",
@@ -506,18 +509,17 @@ Hombre lobo en París"></textarea>
       const songInfo = document.createElement('div');
       songInfo.className = "flex items-baseline gap-1.5 flex-1 min-w-0";
 
-      // Vibrant red numbering and bone-white bold titles
       songInfo.innerHTML = `
         <span class="font-bebas text-[15px] sm:text-[16px] font-black text-red-500 w-4 text-right select-none flex-shrink-0">
           ${displayNumber}.
         </span>
         <div class="flex-1 flex flex-wrap items-baseline gap-1 min-w-0">
-          <span contenteditable="true" 
+          <span contenteditable="true"
                 onblur="updateSongName('${block.id}', '${song.id}', this.innerText)"
                 class="font-montserrat tracking-tight text-boneWhite font-bold text-[11px] sm:text-[12px] break-words hover:text-white transition focus:outline-none leading-snug">
             ${song.name || "Canción"}
           </span>
-          <span contenteditable="true" 
+          <span contenteditable="true"
                 onblur="updateSongNote('${block.id}', '${song.id}', this.innerText)"
                 class="text-red-400 text-[10px] font-bold tracking-wider uppercase empty:hidden hover:bg-red-900/30 px-0.5 rounded focus:outline-none">
             ${song.note || ""}
@@ -565,7 +567,6 @@ Hombre lobo en París"></textarea>
         }`;
         blockEl.id = `block-${block.id}`;
 
-        // Header Bar: Solid red, black circle badge, bold rock font without clipping
         const headerDiv = document.createElement('div');
         headerDiv.className = "block-header-bar";
 
@@ -578,15 +579,14 @@ Hombre lobo en París"></textarea>
           <span class="badge-circle">${badgeNum}</span>
           <div class="ml-1.5 flex items-center block-title-text">
             <span class="mr-1.5 select-none text-black font-black">-</span>
-            <span contenteditable="true" 
-                  onblur="updateBlockTitle('${block.id}', this.innerText)" 
+            <span contenteditable="true"
+                  onblur="updateBlockTitle('${block.id}', this.innerText)"
                   class="hover:text-zinc-900 transition focus:outline-none">
               ${block.title}
             </span>
           </div>
         `;
 
-        // Action icons (filtered in image export)
         const actionsDiv = document.createElement('div');
         actionsDiv.className = "edit-only-control flex items-center gap-1 text-[10px] flex-shrink-0";
         actionsDiv.innerHTML = `
@@ -608,12 +608,10 @@ Hombre lobo en París"></textarea>
         headerDiv.appendChild(actionsDiv);
         blockEl.appendChild(headerDiv);
 
-        // Content Area: tightly hugging songs to eliminate empty space
         const contentDiv = document.createElement('div');
         contentDiv.className = "p-1.5 sm:p-2";
 
         if (spansFullWidth && block.songs.length > 1) {
-          // Odd final block: split into 2 balanced subcolumns
           const midPoint = Math.ceil(block.songs.length / 2);
           const col1Songs = block.songs.slice(0, midPoint);
           const col2Songs = block.songs.slice(midPoint);
@@ -639,7 +637,6 @@ Hombre lobo en París"></textarea>
           twoColGrid.appendChild(col2);
           contentDiv.appendChild(twoColGrid);
         } else {
-          // Standard single column
           const songsList = document.createElement('div');
           songsList.className = "flex flex-col";
           block.songs.forEach((song, songIdx) => {
@@ -649,7 +646,6 @@ Hombre lobo en París"></textarea>
           contentDiv.appendChild(songsList);
         }
 
-        // Add song button (filtered in export)
         const addBtn = document.createElement('div');
         addBtn.className = "edit-only-control mt-1 pt-1 border-t border-zinc-900 flex justify-between items-center";
         addBtn.innerHTML = `
@@ -872,31 +868,31 @@ Hombre lobo en París"></textarea>
       imgEl.onerror = function() {
         imgEl.classList.add('hidden');
         fallbackEl.classList.remove('hidden');
+        fallbackEl.classList.add('flex');
       };
 
       imgEl.onload = function() {
         imgEl.classList.remove('hidden');
         fallbackEl.classList.add('hidden');
+        fallbackEl.classList.remove('flex');
       };
 
       imgEl.src = targetSrc;
     }
 
-    function openJsonModal() {
+    /* ============ JSON EXPORT ============ */
+    function openJsonExportModal() {
       try {
         const jsonStr = JSON.stringify(appData, null, 2);
         document.getElementById('jsonExportTextarea').value = jsonStr;
-        document.getElementById('jsonImportTextarea').value = "";
-        const fileInput = document.getElementById('jsonFileInput');
-        if (fileInput) fileInput.value = "";
-        document.getElementById('jsonModal').classList.remove('hidden');
+        document.getElementById('jsonExportModal').classList.remove('hidden');
       } catch (err) {
         console.error("JSON preview error:", err);
       }
     }
 
-    function closeJsonModal() {
-      document.getElementById('jsonModal').classList.add('hidden');
+    function closeJsonExportModal() {
+      document.getElementById('jsonExportModal').classList.add('hidden');
     }
 
     function downloadJsonFile() {
@@ -928,6 +924,18 @@ Hombre lobo en París"></textarea>
       }
     }
 
+    /* ============ JSON IMPORT ============ */
+    function openJsonImportModal() {
+      document.getElementById('jsonImportTextarea').value = "";
+      const fileInput = document.getElementById('jsonFileInput');
+      if (fileInput) fileInput.value = "";
+      document.getElementById('jsonImportModal').classList.remove('hidden');
+    }
+
+    function closeJsonImportModal() {
+      document.getElementById('jsonImportModal').classList.add('hidden');
+    }
+
     function loadAndApplyJson(parsedObject) {
       if (!parsedObject || typeof parsedObject !== 'object' || !Array.isArray(parsedObject.blocks)) {
         throw new Error("Formato de setlist no válido");
@@ -953,7 +961,7 @@ Hombre lobo en París"></textarea>
       saveData();
       applyLogoState();
       renderAll();
-      closeJsonModal();
+      closeJsonImportModal();
       showToast("¡Setlist actualizado exitosamente!");
     }
 
@@ -988,12 +996,10 @@ Hombre lobo en París"></textarea>
       showToast("Generando imagen con renderizado nativo...", "info");
 
       try {
-        // Ensure web fonts are completely ready before rasterization
         if (document.fonts && document.fonts.ready) {
           await document.fonts.ready;
         }
 
-        // Wait for image logo if still loading
         const logoImg = document.getElementById('customLogoImg');
         if (logoImg && !logoImg.complete && !logoImg.classList.contains('hidden')) {
           await new Promise((resolve) => {
@@ -1002,13 +1008,11 @@ Hombre lobo en París"></textarea>
           });
         }
 
-        // html-to-image: Generates high-res PNG without synthetic canvas hacks or squishing
         const dataUrl = await htmlToImage.toPng(posterNode, {
           pixelRatio: 2.5,
           backgroundColor: '#060607',
           cacheBust: true,
           filter: (node) => {
-            // Automatically exclude all editor buttons and controls
             if (node.classList && node.classList.contains('edit-only-control')) {
               return false;
             }
@@ -1016,7 +1020,6 @@ Hombre lobo en París"></textarea>
           }
         });
 
-        // Trigger direct PNG download
         const link = document.createElement('a');
         link.download = `setlist-colapso-${Date.now()}.png`;
         link.href = dataUrl;
