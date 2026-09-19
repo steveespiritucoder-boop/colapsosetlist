@@ -10,7 +10,7 @@
   <!-- Google Fonts for authentic rock poster typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:ital,wght@0,400;0,600;0,800;0,900;1,700&family=Oswald:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@500;600;700;800;900&family=Oswald:wght@600;700;800;900&display=swap" rel="stylesheet">
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- html2canvas for high quality image export -->
@@ -21,10 +21,12 @@
       theme: {
         extend: {
           colors: {
-            rockRed: '#dc2626',
-            rockRedDark: '#991b1b',
-            posterBg: '#080809',
-            cardBg: '#0c0c0e'
+            rockRed: '#c0101a',
+            rockRedDark: '#8a0910',
+            posterBg: '#050506',
+            cardBg: '#080809',
+            vintageBeige: '#ded5bf',
+            boneWhite: '#f5f1e8'
           },
           fontFamily: {
             bebas: ['"Bebas Neue"', 'sans-serif'],
@@ -38,49 +40,50 @@
 
   <style>
     body {
-      background-color: #060607;
-      background-image: 
-        radial-gradient(circle at 50% 15%, rgba(220, 38, 38, 0.12) 0%, transparent 65%),
-        radial-gradient(circle at 80% 80%, rgba(18, 18, 22, 0.95) 0%, #050506 100%);
+      background-color: #030304;
+      background-image: radial-gradient(circle at 50% 10%, rgba(192, 16, 26, 0.15) 0%, transparent 60%);
       font-family: 'Montserrat', sans-serif;
     }
 
-    /* Textured Poster Frame */
+    /* Fixed Compact Poster Frame matching the original poster proportions */
     .poster-outer-frame {
-      box-shadow: 0 12px 45px rgba(0,0,0,0.95), 0 0 40px rgba(220, 38, 38, 0.2);
-      border: 6px solid #1a1a1d;
-      outline: 2px solid #b91c1c;
+      width: 100%;
+      max-width: 580px;
+      margin: 0 auto;
+      background-color: #060607;
+      border: 3px solid #1c1c20;
+      outline: 2px solid #c0101a;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.95), 0 0 25px rgba(192, 16, 26, 0.2);
     }
 
-    /* Red outline blocks matching the original photo */
+    /* Compact Red Bordered Block Cards */
     .block-card {
-      border: 2px solid #b91c1c;
-      background: #0b0b0d;
-      box-shadow: inset 0 0 18px rgba(185, 28, 28, 0.08);
-      overflow: hidden;
-      transition: all 0.2s ease;
+      border: 1.5px solid #c0101a;
+      background: #08080a;
+      height: fit-content;
+      transition: all 0.15s ease;
     }
 
-    /* Solid Red Header Bar for each block */
+    /* Solid Red Header Bar */
     .block-header-bar {
-      background-color: #b91c1c;
-      border-bottom: 2px solid #7f1d1d;
+      background-color: #c0101a;
+      min-height: 28px;
     }
 
-    /* Number badge inside circle: EXACT line-height for html2canvas alignment */
+    /* Pixel-perfect circle number badge for screen and html2canvas */
     .badge-circle {
       display: inline-block !important;
-      width: 26px !important;
-      height: 26px !important;
-      line-height: 26px !important;
-      min-width: 26px !important;
-      min-height: 26px !important;
+      width: 22px !important;
+      height: 22px !important;
+      line-height: 22px !important;
+      min-width: 22px !important;
+      min-height: 22px !important;
       border-radius: 50% !important;
       background-color: #000000 !important;
       color: #ffffff !important;
-      font-family: Arial, Helvetica, sans-serif !important;
+      font-family: 'Arial', sans-serif !important;
       font-weight: 900 !important;
-      font-size: 13px !important;
+      font-size: 12px !important;
       text-align: center !important;
       vertical-align: middle !important;
       box-sizing: border-box !important;
@@ -90,12 +93,16 @@
       flex-shrink: 0 !important;
     }
 
-    /* Full width spanning for odd final blocks */
+    /* Odd final block spanning full width */
     .block-span-full {
       grid-column: 1 / -1 !important;
     }
 
-    /* Capture Mode (Image Download isolation) */
+    /* Dedicated Capture Mode to lock 580px width during download */
+    .capture-mode {
+      background-color: #000000 !important;
+    }
+
     .capture-mode .no-export {
       display: none !important;
     }
@@ -103,149 +110,123 @@
     .capture-mode .poster-outer-frame {
       box-shadow: none !important;
       margin: 0 auto !important;
-      width: 920px !important;
-      max-width: 920px !important;
+      width: 580px !important;
+      max-width: 580px !important;
+      min-width: 580px !important;
     }
 
     .capture-mode #blocksContainer {
       display: grid !important;
       grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-      gap: 1rem !important;
+      gap: 6px !important;
     }
 
-    .capture-mode .badge-circle {
-      display: inline-block !important;
-      width: 26px !important;
-      height: 26px !important;
-      line-height: 26px !important;
-      text-align: center !important;
-      border-radius: 50% !important;
-      background-color: #000000 !important;
-      color: #ffffff !important;
-      padding: 0 !important;
-      margin: 0 !important;
-    }
-
-    /* In-line editing feedback */
+    /* Inline editable feedback */
     [contenteditable="true"]:hover {
-      outline: 1px dashed rgba(239, 68, 68, 0.5);
+      outline: 1px dashed rgba(192, 16, 26, 0.6);
       cursor: text;
     }
     [contenteditable="true"]:focus {
-      outline: 2px solid #ef4444;
-      background: rgba(220, 38, 38, 0.15);
-      border-radius: 4px;
+      outline: 1.5px solid #c0101a;
+      background: rgba(192, 16, 26, 0.12);
+      border-radius: 2px;
     }
   </style>
 </head>
 
-<body class="text-zinc-100 min-h-screen flex flex-col items-center p-3 md:p-8">
+<body class="text-zinc-100 min-h-screen flex flex-col items-center p-2 sm:p-6">
 
-  <!-- Control Header (Sticky Top Bar) -->
-  <header class="no-export sticky top-2 z-50 w-full max-w-4xl bg-zinc-900/95 backdrop-blur-md border border-zinc-700/80 rounded-2xl p-3 mb-6 shadow-2xl">
-    <div class="flex flex-wrap items-center justify-between gap-3">
-      <!-- App Title & Storage Status -->
+  <!-- Floating Control Bar -->
+  <header class="no-export sticky top-2 z-50 w-full max-w-[580px] bg-zinc-900/95 backdrop-blur-md border border-zinc-800 rounded-xl p-2.5 mb-4 shadow-xl">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <!-- Status Badge -->
       <div class="flex items-center gap-2">
-        <span class="w-3 h-3 rounded-full bg-red-600 animate-pulse"></span>
-        <h1 class="font-bebas text-2xl tracking-wider text-white">SETLIST CREATOR</h1>
-        <span id="saveStatus" class="text-xs font-semibold uppercase tracking-wider text-zinc-400 bg-zinc-800 px-2 py-0.5 rounded border border-zinc-700">
+        <span class="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse"></span>
+        <span class="font-bebas text-lg tracking-wider text-white">COLAPSO SETLIST</span>
+        <span id="saveStatus" class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700">
           Guardado
         </span>
       </div>
 
       <!-- Action Buttons -->
-      <div class="flex flex-wrap items-center gap-2">
-        <!-- Add Block Button -->
-        <button onclick="addNewBlock()" class="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-red-400 hover:text-red-300 font-semibold text-xs md:text-sm rounded-lg border border-red-900/50 transition">
-          <i class="fa-solid fa-folder-plus"></i>
-          <span>Añadir Bloque</span>
+      <div class="flex flex-wrap items-center gap-1.5">
+        <button onclick="addNewBlock()" class="flex items-center gap-1 px-2.5 py-1 bg-zinc-800 hover:bg-zinc-700 text-red-400 font-bold text-xs rounded border border-red-900/40 transition">
+          <i class="fa-solid fa-plus text-[10px]"></i>
+          <span>Bloque</span>
         </button>
 
-        <!-- Continuous Numbering Toggle -->
-        <button id="toggleNumBtn" onclick="toggleContinuousNumbering()" class="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs md:text-sm rounded-lg border border-zinc-700 transition" title="Cambiar modo de numeración">
-          <i class="fa-solid fa-list-ol text-red-500"></i>
-          <span id="numModeLabel">Núm. Corrida: ON</span>
+        <button onclick="openLogoModal()" class="flex items-center gap-1 px-2.5 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs rounded border border-zinc-700 transition" title="Cambiar imagen logo.png">
+          <i class="fa-solid fa-image text-amber-500 text-[10px]"></i>
+          <span>Logo</span>
         </button>
 
-        <!-- Logo / Image Modal Button -->
-        <button onclick="openLogoModal()" class="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs md:text-sm rounded-lg border border-zinc-700 transition">
-          <i class="fa-solid fa-image text-amber-500"></i>
-          <span>Logo / Banda</span>
+        <button onclick="openJsonModal()" class="flex items-center gap-1 px-2.5 py-1 bg-zinc-800 hover:bg-zinc-700 text-cyan-400 text-xs rounded border border-zinc-700 transition" title="Compartir o restaurar JSON">
+          <i class="fa-solid fa-file-code text-[10px]"></i>
+          <span>JSON</span>
         </button>
 
-        <!-- JSON Import / Export Button -->
-        <button onclick="openJsonModal()" class="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs md:text-sm rounded-lg border border-zinc-700 transition" title="Compartir o cargar plantilla JSON entre la banda">
-          <i class="fa-solid fa-file-code text-cyan-400"></i>
-          <span>JSON / Plantilla</span>
-        </button>
-
-        <!-- Reset Button -->
-        <button onclick="confirmReset()" class="flex items-center gap-1 px-2.5 py-1.5 bg-zinc-800 hover:bg-red-950/60 text-zinc-400 hover:text-red-400 text-xs rounded-lg border border-zinc-700 transition" title="Restaurar lista original">
-          <i class="fa-solid fa-rotate-left"></i>
-        </button>
-
-        <!-- Export as Image (Primary Action) -->
-        <button onclick="exportAsImage()" class="flex items-center gap-2 px-4 py-1.5 bg-red-600 hover:bg-red-700 active:scale-95 text-white font-bold text-xs md:text-sm rounded-lg shadow-lg shadow-red-900/40 transition">
-          <i class="fa-solid fa-camera"></i>
-          <span>Descargar Imagen</span>
+        <button onclick="exportAsImage()" class="flex items-center gap-1.5 px-3 py-1 bg-red-600 hover:bg-red-700 text-white font-black text-xs rounded shadow shadow-red-950 transition active:scale-95">
+          <i class="fa-solid fa-camera text-[10px]"></i>
+          <span>Descargar PNG</span>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- MAIN POSTER CONTAINER (Target for html2canvas) -->
-  <div id="setlistPoster" class="poster-outer-frame w-full max-w-4xl bg-posterBg rounded-2xl p-4 sm:p-7 relative transition-all duration-300">
+  <!-- MAIN POSTER CONTAINER (Target for html2canvas - Fixed Compact 580px Poster) -->
+  <div id="setlistPoster" class="poster-outer-frame rounded-lg p-3 sm:p-5 relative transition-all duration-200">
     
-    <!-- HEADER AREA: 80% Width for "SETLIST OFICIAL" and COLAPSO Logo -->
-    <div class="w-[85%] sm:w-[80%] mx-auto text-center mb-6 relative">
+    <!-- HEADER AREA: Authentic Vintage Poster Header -->
+    <div class="w-[84%] mx-auto text-center mt-1 mb-3">
       
-      <!-- Top Subtitle: "SETLIST OFICIAL" -->
-      <div id="posterSubtitle" 
-           contenteditable="true" 
-           onblur="updateSubtitle(this.innerText)" 
-           class="font-oswald tracking-[0.22em] text-zinc-200 text-2xl sm:text-4xl font-black uppercase drop-shadow">
+      <!-- Top Subtitle: Large Vintage Beige "SETLIST OFICIAL" -->
+      <h2 id="posterSubtitle" 
+          contenteditable="true" 
+          onblur="updateSubtitle(this.innerText)" 
+          class="font-bebas text-4xl sm:text-5xl tracking-[0.24em] text-vintageBeige uppercase drop-shadow leading-none select-none">
         SETLIST OFICIAL
-      </div>
+      </h2>
 
-      <!-- BAND LOGO CONTAINER (Takes the full 80% header width) -->
-      <div id="logoContainer" class="my-3 relative group min-h-[110px] w-full flex items-center justify-center">
-        <!-- Imagen directa logo.png (ocupa el 80% del ancho con proporción rectangular) -->
+      <!-- BAND LOGO CONTAINER (Direct <img> pointing to logo.png) -->
+      <div id="logoContainer" class="my-2 min-h-[70px] w-full flex items-center justify-center relative group">
+        <!-- Direct image logo with fallback frame if file is pending -->
         <img id="customLogoImg" 
              src="logo.png" 
              alt="Logo Oficial COLAPSO" 
-             class="w-full max-h-40 sm:max-h-52 object-contain mx-auto drop-shadow-2xl cursor-pointer transition-transform hover:scale-[1.01]" 
+             class="w-full max-h-32 sm:max-h-36 object-contain mx-auto cursor-pointer drop-shadow-xl transition-transform hover:scale-[1.01]" 
              onclick="openLogoModal()"
-             title="Click para cambiar logo o configurar">
+             title="Click para cambiar logo o subir tu archivo">
+
+        <!-- Discreet upload placeholder when image is missing -->
+        <div id="logoFallbackPlaceholder" class="hidden flex-col items-center justify-center p-3 border-2 border-dashed border-red-800/80 bg-red-950/20 rounded cursor-pointer w-full py-4 text-center" onclick="openLogoModal()">
+          <i class="fa-solid fa-arrow-up-from-bracket text-red-500 text-lg mb-1"></i>
+          <span class="font-bebas text-lg text-vintageBeige tracking-wider">CLICK PARA SUBIR LOGO.PNG</span>
+          <span class="text-[10px] text-zinc-400 font-mono">O coloca logo.png en tu carpeta de GitHub</span>
+        </div>
 
         <!-- Floating Edit Button on Hover -->
-        <button onclick="openLogoModal()" class="no-export absolute right-1 top-1 bg-zinc-900/80 hover:bg-red-600 text-zinc-300 hover:text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition shadow">
-          <i class="fa-solid fa-pen-to-square"></i> Cambiar Logo
+        <button onclick="openLogoModal()" class="no-export absolute right-0 top-0 bg-zinc-900/90 hover:bg-red-600 text-zinc-300 hover:text-white px-2 py-0.5 rounded text-[11px] opacity-0 group-hover:opacity-100 transition shadow">
+          <i class="fa-solid fa-pen-to-square"></i> Cambiar
         </button>
       </div>
 
-      <!-- Subtle separator -->
-      <div class="flex items-center justify-center gap-2 mt-1 opacity-70">
-        <div class="h-0.5 w-20 bg-gradient-to-r from-transparent to-red-600"></div>
-        <i class="fa-solid fa-bolt text-red-600 text-xs"></i>
-        <div class="h-0.5 w-20 bg-gradient-to-l from-transparent to-red-600"></div>
-      </div>
     </div>
 
-    <!-- DYNAMIC 2-COLUMN SETLIST BLOCKS (Odd final block takes full width) -->
-    <div id="blocksContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4 items-start">
+    <!-- DYNAMIC 2-COLUMN COMPACT SETLIST BLOCKS -->
+    <div id="blocksContainer" class="grid grid-cols-2 gap-1.5 sm:gap-2 items-start">
       <!-- Blocks will be injected here via JavaScript -->
     </div>
 
-    <!-- Add Block Button inside Poster for editing -->
-    <div class="no-export mt-6 text-center">
-      <button onclick="addNewBlock()" class="w-full py-3 border-2 border-dashed border-red-900/60 hover:border-red-500 bg-red-950/20 hover:bg-red-950/40 text-red-400 hover:text-red-200 rounded-xl font-bold tracking-wider transition flex items-center justify-center gap-2">
-        <i class="fa-solid fa-circle-plus text-lg"></i>
-        <span>AGREGAR NUEVO BLOQUE AL SETLIST</span>
+    <!-- Add Block Action inside Poster (Hidden during export) -->
+    <div class="no-export mt-3 text-center">
+      <button onclick="addNewBlock()" class="w-full py-2 border border-dashed border-red-900/70 hover:border-red-500 bg-red-950/20 hover:bg-red-950/40 text-red-400 hover:text-red-200 rounded font-bold text-xs tracking-wider transition flex items-center justify-center gap-1.5">
+        <i class="fa-solid fa-circle-plus text-sm"></i>
+        <span>AGREGAR NUEVO BLOQUE</span>
       </button>
     </div>
 
-    <!-- Poster Footer -->
-    <div class="mt-8 pt-4 border-t border-zinc-800 flex justify-between items-center text-[10px] text-zinc-400 uppercase tracking-widest">
+    <!-- Poster Subtle Footer -->
+    <div class="mt-4 pt-2 border-t border-zinc-900 flex justify-between items-center text-[9px] text-zinc-500 uppercase tracking-widest font-mono">
       <span id="footerBandName">COLAPSO ROCK BAND</span>
       <span id="footerDate">19 SEPT 2026</span>
       <span>EN VIVO</span>
@@ -253,52 +234,47 @@
 
   </div>
 
-  <!-- Bottom Quick Actions for Mobile -->
-  <div class="no-export mt-6 w-full max-w-4xl flex flex-col sm:flex-row gap-3 justify-center items-center">
-    <button onclick="exportAsImage()" class="w-full sm:w-auto flex-1 py-3.5 px-6 bg-red-600 hover:bg-red-700 active:scale-98 text-white font-black text-sm md:text-base tracking-wider rounded-xl shadow-xl shadow-red-950/50 transition flex items-center justify-center gap-3">
-      <i class="fa-solid fa-file-image text-lg"></i>
-      <span>IMPRIMIR EN IMAGEN (DESCARGAR PNG)</span>
+  <!-- Bottom Action Buttons for Mobile -->
+  <div class="no-export mt-4 w-full max-w-[580px] flex gap-2">
+    <button onclick="exportAsImage()" class="flex-1 py-2.5 px-4 bg-red-600 hover:bg-red-700 active:scale-98 text-white font-black text-xs sm:text-sm tracking-wider rounded shadow-lg shadow-red-950/60 transition flex items-center justify-center gap-2">
+      <i class="fa-solid fa-file-image text-sm"></i>
+      <span>DESCARGAR IMAGEN (PNG)</span>
     </button>
-    <button onclick="window.print()" class="w-full sm:w-auto py-3.5 px-5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-semibold text-sm rounded-xl border border-zinc-700 transition flex items-center justify-center gap-2">
+    <button onclick="window.print()" class="py-2.5 px-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-xs rounded border border-zinc-700 transition flex items-center justify-center gap-1.5">
       <i class="fa-solid fa-print"></i>
-      <span>Imprimir (Papel / PDF)</span>
+      <span>Imprimir</span>
     </button>
   </div>
 
   <!-- MODAL: Logo / Band Settings -->
-  <div id="logoModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-zinc-900 border border-red-900/60 rounded-2xl max-w-md w-full p-6 shadow-2xl">
-      <div class="flex justify-between items-center mb-4 pb-2 border-b border-zinc-800">
-        <h3 class="font-bebas text-2xl text-white tracking-wide">CONFIGURAR LOGO / BANDA</h3>
-        <button onclick="closeLogoModal()" class="text-zinc-400 hover:text-white text-lg">
+  <div id="logoModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
+    <div class="bg-zinc-900 border border-red-900/60 rounded-xl max-w-sm w-full p-4 shadow-2xl">
+      <div class="flex justify-between items-center mb-3 pb-2 border-b border-zinc-800">
+        <h3 class="font-bebas text-xl text-white tracking-wide">CONFIGURACIÓN DE LOGO</h3>
+        <button onclick="closeLogoModal()" class="text-zinc-400 hover:text-white text-base">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
 
-      <div class="space-y-4">
+      <div class="space-y-3">
         <div>
-          <label class="block text-xs font-bold uppercase text-zinc-400 mb-1">Nombre de la Banda</label>
-          <input type="text" id="inputBandName" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-red-500 font-semibold">
+          <label class="block text-[11px] font-bold uppercase text-zinc-400 mb-1">1. Subir imagen desde tu celular o PC</label>
+          <input type="file" id="logoFileInput" accept="image/*" class="w-full text-xs text-zinc-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-red-600 file:text-white hover:file:bg-red-700 cursor-pointer">
+          <p class="text-[10px] text-zinc-500 mt-1">Se guardará automáticamente en tu navegador.</p>
         </div>
 
         <div>
-          <label class="block text-xs font-bold uppercase text-zinc-400 mb-1">Ruta o URL del Logo</label>
-          <input type="text" id="inputLogoUrl" placeholder="logo.png o URL" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-xs font-mono focus:outline-none focus:border-red-500">
-          <p class="text-[11px] text-zinc-400 mt-1">Por defecto: <code class="text-red-400 font-mono">logo.png</code></p>
+          <label class="block text-[11px] font-bold uppercase text-zinc-400 mb-1">2. O ruta relativa / URL de GitHub</label>
+          <input type="text" id="inputLogoUrl" placeholder="logo.png" class="w-full bg-zinc-800 border border-zinc-700 rounded px-2.5 py-1.5 text-white text-xs font-mono focus:outline-none focus:border-red-500">
         </div>
 
-        <div>
-          <label class="block text-xs font-bold uppercase text-zinc-400 mb-1">Subir Otra Imagen de Logo (PNG o JPG)</label>
-          <input type="file" id="logoFileInput" accept="image/*" class="w-full text-xs text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-red-600 file:text-white hover:file:bg-red-700 cursor-pointer">
-        </div>
-
-        <div class="pt-2 flex flex-col gap-2">
-          <button onclick="saveLogoSettings()" class="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg text-sm transition">
-            Guardar Cambios
+        <div class="pt-2 flex flex-col gap-1.5">
+          <button onclick="saveLogoSettings()" class="w-full py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded text-xs transition">
+            Guardar Ruta
           </button>
-          <button onclick="restoreOriginalLogo()" class="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-semibold rounded-lg text-xs transition flex items-center justify-center gap-1.5">
-            <i class="fa-solid fa-rotate-left text-amber-500"></i>
-            <span>Restablecer a logo.png Original</span>
+          <button onclick="restoreOriginalLogo()" class="w-full py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-semibold rounded text-xs transition flex items-center justify-center gap-1.5 border border-zinc-700">
+            <i class="fa-solid fa-rotate-left text-amber-500 text-[11px]"></i>
+            <span>Restablecer a logo.png relativo</span>
           </button>
         </div>
       </div>
@@ -306,100 +282,79 @@
   </div>
 
   <!-- MODAL: Bulk Song Import -->
-  <div id="bulkModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-zinc-900 border border-red-900/60 rounded-2xl max-w-lg w-full p-6 shadow-2xl">
-      <div class="flex justify-between items-center mb-3 pb-2 border-b border-zinc-800">
-        <h3 class="font-bebas text-2xl text-white tracking-wide">PEGAR LISTA DE CANCIONES</h3>
-        <button onclick="closeBulkModal()" class="text-zinc-400 hover:text-white text-lg">
+  <div id="bulkModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
+    <div class="bg-zinc-900 border border-red-900/60 rounded-xl max-w-md w-full p-4 shadow-2xl">
+      <div class="flex justify-between items-center mb-2 pb-2 border-b border-zinc-800">
+        <h3 class="font-bebas text-xl text-white tracking-wide">PEGAR CANCIONES EN EL BLOQUE</h3>
+        <button onclick="closeBulkModal()" class="text-zinc-400 hover:text-white text-base">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
 
-      <p class="text-xs text-zinc-300 mb-2">Pega aquí tus temas, uno por línea:</p>
+      <p class="text-[11px] text-zinc-400 mb-2">Pega la lista de temas (uno por línea):</p>
       
-      <textarea id="bulkTextarea" rows="8" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-red-500 font-mono" placeholder="De música ligera
+      <textarea id="bulkTextarea" rows="6" class="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-white text-xs focus:outline-none focus:border-red-500 font-mono" placeholder="De música ligera
 Te vi en un tren
 Hombre lobo en París"></textarea>
 
-      <div class="mt-4 flex gap-2">
-        <button onclick="closeBulkModal()" class="flex-1 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold rounded-lg text-sm transition">
+      <div class="mt-3 flex gap-2">
+        <button onclick="closeBulkModal()" class="flex-1 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold rounded text-xs transition">
           Cancelar
         </button>
-        <button onclick="applyBulkImport()" class="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg text-sm transition">
-          Insertar Canciones
+        <button onclick="applyBulkImport()" class="flex-1 py-1.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded text-xs transition">
+          Insertar
         </button>
       </div>
     </div>
   </div>
 
   <!-- MODAL: Import / Export JSON Template -->
-  <div id="jsonModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
-    <div class="bg-zinc-900 border border-zinc-700 rounded-2xl max-w-xl w-full p-4 sm:p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
-      <div class="flex justify-between items-center mb-4 pb-2 border-b border-zinc-800">
-        <div class="flex items-center gap-2">
-          <i class="fa-solid fa-code-compare text-cyan-400 text-xl"></i>
-          <h3 class="font-bebas text-2xl text-white tracking-wide">COMPARTIR PLANTILLA (JSON)</h3>
+  <div id="jsonModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
+    <div class="bg-zinc-900 border border-zinc-700 rounded-xl max-w-md w-full p-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-3 pb-2 border-b border-zinc-800">
+        <div class="flex items-center gap-1.5">
+          <i class="fa-solid fa-code-compare text-cyan-400 text-base"></i>
+          <h3 class="font-bebas text-xl text-white tracking-wide">COMPARTIR PLANTILLA (JSON)</h3>
         </div>
-        <button onclick="closeJsonModal()" class="text-zinc-400 hover:text-white text-lg p-1">
+        <button onclick="closeJsonModal()" class="text-zinc-400 hover:text-white text-base">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
 
-      <p class="text-xs text-zinc-300 mb-4 leading-relaxed">
-        Exporta tu setlist para enviarlo a los miembros de la banda o importa un archivo JSON para sincronizar la lista al instante.
-      </p>
-
       <!-- EXPORT SECTION -->
-      <div class="bg-zinc-800/60 rounded-xl p-3.5 border border-zinc-700/70 mb-4">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-xs font-bold text-white uppercase tracking-wide flex items-center gap-1.5">
-            <i class="fa-solid fa-arrow-up-from-bracket text-green-400"></i>
-            1. Exportar / Enviar a la Banda
-          </span>
-          <span class="text-[10px] text-zinc-400 font-mono">Formato .json</span>
+      <div class="bg-zinc-800/60 rounded-lg p-2.5 border border-zinc-700 mb-3">
+        <div class="flex items-center justify-between mb-1.5">
+          <span class="text-xs font-bold text-white uppercase">1. Exportar para la Banda</span>
         </div>
-
-        <div class="flex flex-wrap gap-2 mb-2">
-          <button onclick="downloadJsonFile()" class="flex-1 min-w-[140px] py-2 px-3 bg-zinc-700 hover:bg-zinc-600 text-white font-semibold text-xs rounded-lg flex items-center justify-center gap-1.5 transition">
-            <i class="fa-solid fa-file-arrow-down text-cyan-400"></i>
-            <span>Descargar Archivo .json</span>
+        <div class="flex gap-1.5 mb-1.5">
+          <button onclick="downloadJsonFile()" class="flex-1 py-1.5 px-2 bg-zinc-700 hover:bg-zinc-600 text-white font-semibold text-[11px] rounded flex items-center justify-center gap-1 transition">
+            <i class="fa-solid fa-download text-cyan-400"></i>
+            <span>Descargar .json</span>
           </button>
-          <button onclick="copyJsonToClipboard()" class="flex-1 min-w-[140px] py-2 px-3 bg-zinc-700 hover:bg-zinc-600 text-white font-semibold text-xs rounded-lg flex items-center justify-center gap-1.5 transition">
-            <i class="fa-solid fa-clipboard text-amber-400"></i>
-            <span>Copiar Texto JSON</span>
+          <button onclick="copyJsonToClipboard()" class="flex-1 py-1.5 px-2 bg-zinc-700 hover:bg-zinc-600 text-white font-semibold text-[11px] rounded flex items-center justify-center gap-1 transition">
+            <i class="fa-solid fa-copy text-amber-400"></i>
+            <span>Copiar Código</span>
           </button>
         </div>
-
-        <textarea id="jsonExportTextarea" readonly class="w-full h-20 bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-zinc-400 text-[11px] font-mono focus:outline-none select-all resize-none"></textarea>
+        <textarea id="jsonExportTextarea" readonly class="w-full h-16 bg-zinc-950 border border-zinc-800 rounded p-1.5 text-zinc-400 text-[10px] font-mono select-all resize-none"></textarea>
       </div>
 
       <!-- IMPORT SECTION -->
-      <div class="bg-zinc-800/60 rounded-xl p-3.5 border border-zinc-700/70 mb-4">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-xs font-bold text-white uppercase tracking-wide flex items-center gap-1.5">
-            <i class="fa-solid fa-arrow-down-to-bracket text-cyan-400"></i>
-            2. Importar / Actualizar Setlist
-          </span>
-          <span class="text-[10px] text-amber-400 font-semibold">Sobrescribirá tu lista</span>
+      <div class="bg-zinc-800/60 rounded-lg p-2.5 border border-zinc-700 mb-3">
+        <div class="flex items-center justify-between mb-1">
+          <span class="text-xs font-bold text-white uppercase">2. Importar Plantilla</span>
         </div>
-
-        <div class="mb-3">
-          <label class="block text-[11px] font-semibold text-zinc-400 mb-1">Cargar archivo .json guardado:</label>
-          <input type="file" id="jsonFileInput" accept=".json,application/json" onchange="handleJsonFileUpload(event)" class="w-full text-xs text-zinc-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-zinc-700 file:text-white hover:file:bg-zinc-600 cursor-pointer">
+        <div class="mb-2">
+          <input type="file" id="jsonFileInput" accept=".json,application/json" onchange="handleJsonFileUpload(event)" class="w-full text-xs text-zinc-400 file:mr-2 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-[11px] file:bg-zinc-700 file:text-white cursor-pointer">
         </div>
-
-        <div>
-          <label class="block text-[11px] font-semibold text-zinc-400 mb-1">O pega el texto JSON recibido aquí:</label>
-          <textarea id="jsonImportTextarea" rows="3" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2 text-white text-xs font-mono focus:outline-none focus:border-cyan-400 resize-none" placeholder='{ "bandName": "COLAPSO", "blocks": [ ... ] }'></textarea>
-          <button onclick="importJsonFromTextarea()" class="mt-2 w-full py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs rounded-lg transition flex items-center justify-center gap-1.5">
-            <i class="fa-solid fa-arrows-rotate"></i>
-            <span>Cargar y Reemplazar Setlist</span>
-          </button>
-        </div>
+        <textarea id="jsonImportTextarea" rows="2" class="w-full bg-zinc-950 border border-zinc-700 rounded p-1.5 text-white text-[11px] font-mono placeholder-zinc-600 resize-none" placeholder="O pega el código JSON aquí..."></textarea>
+        <button onclick="importJsonFromTextarea()" class="mt-1.5 w-full py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs rounded transition">
+          Actualizar Setlist
+        </button>
       </div>
 
       <div class="text-right">
-        <button onclick="closeJsonModal()" class="px-5 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-semibold text-xs rounded-lg border border-zinc-700 transition">
+        <button onclick="closeJsonModal()" class="px-3 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs rounded border border-zinc-700">
           Cerrar
         </button>
       </div>
@@ -407,13 +362,13 @@ Hombre lobo en París"></textarea>
   </div>
 
   <!-- Toast Notification -->
-  <div id="toast" class="fixed bottom-5 right-5 z-50 bg-zinc-800 border border-red-600 text-white px-4 py-3 rounded-xl shadow-2xl transform translate-y-24 opacity-0 transition-all duration-300 flex items-center gap-3">
+  <div id="toast" class="fixed bottom-4 right-4 z-50 bg-zinc-800 border border-red-600 text-white px-3 py-2 rounded-lg shadow-2xl transform translate-y-24 opacity-0 transition-all duration-200 flex items-center gap-2 text-xs">
     <i id="toastIcon" class="fa-solid fa-circle-check text-red-500"></i>
-    <span id="toastMsg" class="text-sm font-semibold">Mensaje</span>
+    <span id="toastMsg" class="font-semibold">Mensaje</span>
   </div>
 
   <script>
-    // Clean initial setlist from reference photo (no asterisks, no notes)
+    // Clean initial setlist from reference photo (No asterisks, no notes)
     const INITIAL_STATE = {
       subtitle: "SETLIST OFICIAL",
       bandName: "COLAPSO",
@@ -473,7 +428,8 @@ Hombre lobo en París"></textarea>
             { id: "s25", name: "Ya no quiero más ska", note: "" },
             { id: "s26", name: "Triciclo Perú", note: "" },
             { id: "s27", name: "Magdalena", note: "" },
-            { id: "s28", name: "La guitarra", note: "" }
+            { id: "s28", name: "La guitarra", note: "" },
+            { id: "s29", name: "ENCORE / 'YAPA'", note: "" }
           ]
         },
         {
@@ -481,17 +437,17 @@ Hombre lobo en París"></textarea>
           title: "BLOQUE 5",
           badge: "5",
           songs: [
-            { id: "s29", name: "Me resfríe en Brasil", note: "" },
-            { id: "s30", name: "Los globos del cielo", note: "" },
-            { id: "s31", name: "Es por amor", note: "" },
-            { id: "s32", name: "La voz de los 80s", note: "" },
-            { id: "s33", name: "Take on me", note: "" }
+            { id: "s30", name: "Me resfríe en Brasil", note: "" },
+            { id: "s31", name: "Los globos del cielo", note: "" },
+            { id: "s32", name: "Es por amor", note: "" },
+            { id: "s33", name: "La voz de los 80s", note: "" },
+            { id: "s34", name: "Take on me", note: "" }
           ]
         }
       ]
     };
 
-    const STORAGE_KEY = "colapso_setlist_storage_v2";
+    const STORAGE_KEY = "colapso_setlist_storage_v3";
     let appData = null;
     let targetBlockIdForBulk = null;
 
@@ -504,12 +460,11 @@ Hombre lobo en París"></textarea>
           appData = JSON.parse(JSON.stringify(INITIAL_STATE));
         }
       } catch (e) {
-        console.error("Error reading storage:", e);
+        console.error("Storage read error:", e);
         appData = JSON.parse(JSON.stringify(INITIAL_STATE));
       }
 
-      // Ensure customLogo defaults to logo.png if null or undefined
-      if (appData && !appData.customLogo) {
+      if (!appData.customLogo) {
         appData.customLogo = "logo.png";
       }
 
@@ -526,44 +481,37 @@ Hombre lobo en París"></textarea>
         localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
         const statusEl = document.getElementById('saveStatus');
         statusEl.innerText = "Guardado";
-        statusEl.className = "text-xs font-semibold uppercase tracking-wider text-green-400 bg-green-950/40 px-2 py-0.5 rounded border border-green-800";
+        statusEl.className = "text-[10px] font-bold uppercase tracking-wider text-green-400 bg-green-950/40 px-1.5 py-0.5 rounded border border-green-800";
         setTimeout(() => {
           statusEl.innerText = "Sincronizado";
-          statusEl.className = "text-xs font-semibold uppercase tracking-wider text-zinc-400 bg-zinc-800 px-2 py-0.5 rounded border border-zinc-700";
-        }, 1500);
+          statusEl.className = "text-[10px] font-bold uppercase tracking-wider text-zinc-400 bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700";
+        }, 1200);
       } catch (e) {
-        console.error("Failed to save state:", e);
+        console.error("Save error:", e);
       }
-    }
-
-    function toggleContinuousNumbering() {
-      appData.continuousNumbering = !appData.continuousNumbering;
-      document.getElementById('numModeLabel').innerText = appData.continuousNumbering ? "Núm. Corrida: ON" : "Núm. Corrida: OFF";
-      saveData();
-      renderAll();
-      showToast(appData.continuousNumbering ? "Numeración continua activada" : "Numeración por bloque activada");
     }
 
     function createSongRow(block, song, songIdx, displayNumber) {
       const songRow = document.createElement('div');
-      songRow.className = "group flex items-center justify-between py-1 px-1.5 rounded hover:bg-zinc-900/80 transition min-w-0";
+      songRow.className = "group flex items-center justify-between py-[1.5px] px-1 rounded hover:bg-zinc-900/90 transition min-w-0 leading-tight";
 
       const songInfo = document.createElement('div');
-      songInfo.className = "flex items-baseline gap-2 flex-1 min-w-0";
+      songInfo.className = "flex items-baseline gap-1.5 flex-1 min-w-0";
 
+      // Vibrant red numbering and bone white titles (compact Title Case matching photo)
       songInfo.innerHTML = `
-        <span class="font-bebas text-base sm:text-xl font-black text-red-500 w-5 sm:w-6 text-right select-none flex-shrink-0">
+        <span class="font-bebas text-[15px] sm:text-[17px] font-black text-red-500 w-4 text-right select-none flex-shrink-0">
           ${displayNumber}.
         </span>
-        <div class="flex-1 flex flex-wrap items-baseline gap-1.5 min-w-0">
+        <div class="flex-1 flex flex-wrap items-baseline gap-1 min-w-0">
           <span contenteditable="true" 
                 onblur="updateSongName('${block.id}', '${song.id}', this.innerText)"
-                class="font-oswald tracking-wide text-zinc-100 font-semibold text-sm sm:text-base uppercase break-words hover:text-white transition focus:outline-none">
-            ${song.name || "Canción sin título"}
+                class="font-montserrat tracking-tight text-boneWhite font-bold text-[11px] sm:text-[12.5px] uppercase break-words hover:text-white transition focus:outline-none leading-snug">
+            ${song.name || "Canción"}
           </span>
           <span contenteditable="true" 
                 onblur="updateSongNote('${block.id}', '${song.id}', this.innerText)"
-                class="text-red-400 text-[11px] sm:text-xs font-bold tracking-wider uppercase empty:hidden hover:bg-red-900/30 px-1 rounded transition focus:outline-none">
+                class="text-red-400 text-[10px] font-bold tracking-wider uppercase empty:hidden hover:bg-red-900/30 px-0.5 rounded focus:outline-none">
             ${song.note || ""}
           </span>
         </div>
@@ -572,13 +520,13 @@ Hombre lobo en París"></textarea>
       const songControls = document.createElement('div');
       songControls.className = "no-export flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ml-1";
       songControls.innerHTML = `
-        <button onclick="moveSong('${block.id}', '${song.id}', -1)" ${songIdx === 0 ? 'disabled' : ''} class="p-1 text-zinc-400 hover:text-white disabled:opacity-20 text-[10px]" title="Subir">
+        <button onclick="moveSong('${block.id}', '${song.id}', -1)" ${songIdx === 0 ? 'disabled' : ''} class="p-0.5 text-zinc-500 hover:text-white disabled:opacity-20 text-[9px]">
           <i class="fa-solid fa-chevron-up"></i>
         </button>
-        <button onclick="moveSong('${block.id}', '${song.id}', 1)" ${songIdx === block.songs.length - 1 ? 'disabled' : ''} class="p-1 text-zinc-400 hover:text-white disabled:opacity-20 text-[10px]" title="Bajar">
+        <button onclick="moveSong('${block.id}', '${song.id}', 1)" ${songIdx === block.songs.length - 1 ? 'disabled' : ''} class="p-0.5 text-zinc-500 hover:text-white disabled:opacity-20 text-[9px]">
           <i class="fa-solid fa-chevron-down"></i>
         </button>
-        <button onclick="deleteSong('${block.id}', '${song.id}')" class="p-1 text-zinc-500 hover:text-red-400 text-[11px]" title="Eliminar">
+        <button onclick="deleteSong('${block.id}', '${song.id}')" class="p-0.5 text-zinc-600 hover:text-red-400 text-[10px]">
           <i class="fa-solid fa-xmark"></i>
         </button>
       `;
@@ -604,25 +552,25 @@ Hombre lobo en París"></textarea>
         const spansFullWidth = isOddTotal && isLastBlock;
 
         const blockEl = document.createElement('div');
-        blockEl.className = `block-card rounded-xl relative transition-all duration-200 ${
-          spansFullWidth ? 'sm:col-span-2 block-span-full' : 'col-span-1'
+        blockEl.className = `block-card rounded relative ${
+          spansFullWidth ? 'col-span-2 block-span-full' : 'col-span-1'
         }`;
         blockEl.id = `block-${block.id}`;
 
-        // Top Red Header Bar
+        // Red Header Bar matching poster (Solid red, black circle badge, bold rock font)
         const headerDiv = document.createElement('div');
-        headerDiv.className = "block-header-bar px-3 py-1.5 flex items-center justify-between";
+        headerDiv.className = "block-header-bar px-2 py-1 flex items-center justify-between";
 
         const titleArea = document.createElement('div');
-        titleArea.className = "flex items-center gap-2 min-w-0";
+        titleArea.className = "flex items-center min-w-0";
 
         const badgeNum = blockIndex + 1;
 
-        // NOTE: Strict HTML without spaces inside badge-circle to guarantee zero-offset in html2canvas
+        // Pixel-perfect Badge Circle without inside whitespaces for html2canvas alignment
         titleArea.innerHTML = `
           <span class="badge-circle">${badgeNum}</span>
-          <span class="text-black font-black text-lg select-none font-oswald">-</span>
-          <div class="flex items-center gap-1.5 text-black font-oswald text-lg sm:text-xl font-black tracking-wider uppercase truncate">
+          <div class="ml-1.5 flex items-center text-black font-oswald text-[13px] sm:text-[14px] font-black tracking-wide uppercase truncate">
+            <span class="mr-1 select-none">-</span>
             <span contenteditable="true" 
                   onblur="updateBlockTitle('${block.id}', this.innerText)" 
                   class="hover:text-zinc-900 transition focus:outline-none">
@@ -631,20 +579,20 @@ Hombre lobo en París"></textarea>
           </div>
         `;
 
-        // Block Controls (hidden during image export)
+        // Action icons (hidden in image export)
         const actionsDiv = document.createElement('div');
-        actionsDiv.className = "no-export flex items-center gap-1 text-xs flex-shrink-0";
+        actionsDiv.className = "no-export flex items-center gap-1 text-[10px] flex-shrink-0";
         actionsDiv.innerHTML = `
-          <button onclick="openBulkModalForBlock('${block.id}')" class="p-1 px-2 bg-black/40 hover:bg-black/70 text-white rounded transition" title="Pegar canciones en bloque">
+          <button onclick="openBulkModalForBlock('${block.id}')" class="p-0.5 px-1 bg-black/40 hover:bg-black/70 text-white rounded" title="Pegar canciones">
             <i class="fa-solid fa-paste"></i>
           </button>
-          <button onclick="moveBlock('${block.id}', -1)" ${blockIndex === 0 ? 'disabled' : ''} class="p-1 px-1.5 bg-black/40 hover:bg-black/70 disabled:opacity-20 text-white rounded transition" title="Subir Bloque">
+          <button onclick="moveBlock('${block.id}', -1)" ${blockIndex === 0 ? 'disabled' : ''} class="p-0.5 px-1 bg-black/40 hover:bg-black/70 disabled:opacity-20 text-white rounded">
             <i class="fa-solid fa-arrow-up"></i>
           </button>
-          <button onclick="moveBlock('${block.id}', 1)" ${blockIndex === appData.blocks.length - 1 ? 'disabled' : ''} class="p-1 px-1.5 bg-black/40 hover:bg-black/70 disabled:opacity-20 text-white rounded transition" title="Bajar Bloque">
+          <button onclick="moveBlock('${block.id}', 1)" ${blockIndex === appData.blocks.length - 1 ? 'disabled' : ''} class="p-0.5 px-1 bg-black/40 hover:bg-black/70 disabled:opacity-20 text-white rounded">
             <i class="fa-solid fa-arrow-down"></i>
           </button>
-          <button onclick="deleteBlock('${block.id}')" class="p-1 px-1.5 bg-black/40 hover:bg-black text-red-300 hover:text-white rounded transition" title="Eliminar Bloque">
+          <button onclick="deleteBlock('${block.id}')" class="p-0.5 px-1 bg-black/40 hover:bg-black text-red-300 hover:text-white rounded">
             <i class="fa-solid fa-trash-can"></i>
           </button>
         `;
@@ -653,67 +601,59 @@ Hombre lobo en París"></textarea>
         headerDiv.appendChild(actionsDiv);
         blockEl.appendChild(headerDiv);
 
-        // Song List Content Area
+        // Content Area
         const contentDiv = document.createElement('div');
-        contentDiv.className = "p-3 sm:p-4";
+        contentDiv.className = "p-1.5 sm:p-2";
 
         if (spansFullWidth && block.songs.length > 1) {
-          // Odd final block: split into 2 internal sub-columns
+          // Odd final block: split into 2 internal subcolumns (50% each)
           const midPoint = Math.ceil(block.songs.length / 2);
           const col1Songs = block.songs.slice(0, midPoint);
           const col2Songs = block.songs.slice(midPoint);
 
-          const twoColContainer = document.createElement('div');
-          twoColContainer.className = "grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-1";
+          const twoColGrid = document.createElement('div');
+          twoColGrid.className = "grid grid-cols-2 gap-x-2";
 
-          const col1Div = document.createElement('div');
-          col1Div.className = "flex flex-col gap-1";
+          const col1 = document.createElement('div');
+          col1.className = "flex flex-col";
           col1Songs.forEach((song, idx) => {
-            const num = appData.continuousNumbering ? globalSongIndex : (idx + 1);
-            globalSongIndex++;
-            col1Div.appendChild(createSongRow(block, song, idx, num));
+            const num = globalSongIndex++;
+            col1.appendChild(createSongRow(block, song, idx, num));
           });
 
-          const col2Div = document.createElement('div');
-          col2Div.className = "flex flex-col gap-1";
+          const col2 = document.createElement('div');
+          col2.className = "flex flex-col";
           col2Songs.forEach((song, idx) => {
-            const actualIdx = midPoint + idx;
-            const num = appData.continuousNumbering ? globalSongIndex : (actualIdx + 1);
-            globalSongIndex++;
-            col2Div.appendChild(createSongRow(block, song, actualIdx, num));
+            const num = globalSongIndex++;
+            col2.appendChild(createSongRow(block, song, midPoint + idx, num));
           });
 
-          twoColContainer.appendChild(col1Div);
-          twoColContainer.appendChild(col2Div);
-          contentDiv.appendChild(twoColContainer);
+          twoColGrid.appendChild(col1);
+          twoColGrid.appendChild(col2);
+          contentDiv.appendChild(twoColGrid);
         } else {
           // Standard single column
           const songsList = document.createElement('div');
-          songsList.className = "flex flex-col gap-1";
-
+          songsList.className = "flex flex-col";
           block.songs.forEach((song, songIdx) => {
-            const num = appData.continuousNumbering ? globalSongIndex : (songIdx + 1);
-            globalSongIndex++;
+            const num = globalSongIndex++;
             songsList.appendChild(createSongRow(block, song, songIdx, num));
           });
-
           contentDiv.appendChild(songsList);
         }
 
-        // Add Song Button
-        const addSongBtn = document.createElement('div');
-        addSongBtn.className = "no-export mt-2.5 pt-2 border-t border-zinc-800/80 flex items-center justify-between";
-        addSongBtn.innerHTML = `
-          <button onclick="addNewSong('${block.id}')" class="text-xs font-bold text-red-400 hover:text-red-300 flex items-center gap-1.5 py-1 px-2 rounded hover:bg-red-950/30 transition">
-            <i class="fa-solid fa-plus text-[10px]"></i>
-            <span>Añadir Canción</span>
+        // Add song button (no-export)
+        const addBtn = document.createElement('div');
+        addBtn.className = "no-export mt-1.5 pt-1 border-t border-zinc-900 flex justify-between items-center";
+        addBtn.innerHTML = `
+          <button onclick="addNewSong('${block.id}')" class="text-[10px] font-bold text-red-400 hover:text-red-300 flex items-center gap-1 py-0.5 px-1.5 rounded hover:bg-red-950/30 transition">
+            <i class="fa-solid fa-plus text-[8px]"></i>
+            <span>Añadir Tema</span>
           </button>
-          <span class="text-[11px] text-zinc-500 font-semibold tracking-wider">
-            ${block.songs.length} temas
-          </span>
+          <span class="text-[9px] text-zinc-600 font-mono">${block.songs.length} temas</span>
         `;
+        contentDiv.appendChild(addBtn);
 
-        contentDiv.appendChild(addSongBtn);
         blockEl.appendChild(contentDiv);
         container.appendChild(blockEl);
       });
@@ -732,17 +672,12 @@ Hombre lobo en París"></textarea>
       appData.blocks.push(newBlock);
       saveData();
       renderAll();
-      showToast(`BLOQUE ${nextNum} añadido`);
-      
-      setTimeout(() => {
-        const el = document.getElementById(`block-${newBlock.id}`);
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 100);
+      showToast(`BLOQUE ${nextNum} agregado`);
     }
 
     function deleteBlock(blockId) {
       if (appData.blocks.length <= 1) {
-        showToast("Debes mantener al menos un bloque", "warning");
+        showToast("Debes conservar al menos 1 bloque", "warning");
         return;
       }
       appData.blocks = appData.blocks.filter(b => b.id !== blockId);
@@ -875,134 +810,10 @@ Hombre lobo en París"></textarea>
       saveData();
       renderAll();
       closeBulkModal();
-      showToast(`${lines.length} canciones añadidas`);
-    }
-
-    function openJsonModal() {
-      try {
-        const jsonStr = JSON.stringify(appData, null, 2);
-        document.getElementById('jsonExportTextarea').value = jsonStr;
-        document.getElementById('jsonImportTextarea').value = "";
-        const fileInput = document.getElementById('jsonFileInput');
-        if (fileInput) fileInput.value = "";
-        document.getElementById('jsonModal').classList.remove('hidden');
-      } catch (err) {
-        console.error("Error generating JSON preview:", err);
-      }
-    }
-
-    function closeJsonModal() {
-      document.getElementById('jsonModal').classList.add('hidden');
-    }
-
-    function downloadJsonFile() {
-      try {
-        const jsonString = JSON.stringify(appData, null, 2);
-        const blob = new Blob([jsonString], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        
-        const cleanName = (appData.bandName || 'COLAPSO').toLowerCase().replace(/\s+/g, '-');
-        const now = new Date();
-        const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-        
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `setlist-${cleanName}-${dateStr}.json`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-
-        showToast("Archivo JSON descargado correctamente");
-      } catch (e) {
-        console.error("Download JSON error:", e);
-        showToast("Error al generar el archivo JSON", "error");
-      }
-    }
-
-    function copyJsonToClipboard() {
-      const textarea = document.getElementById('jsonExportTextarea');
-      textarea.select();
-      textarea.setSelectionRange(0, 99999);
-      try {
-        const successful = document.execCommand('copy');
-        if (successful) {
-          showToast("¡Código JSON copiado al portapapeles!");
-        } else {
-          showToast("Copia el texto manualmente del recuadro", "warning");
-        }
-      } catch (err) {
-        showToast("Selecciona y copia el texto", "warning");
-      }
-    }
-
-    function loadAndApplyJson(parsedObject) {
-      if (!parsedObject || typeof parsedObject !== 'object') {
-        throw new Error("El archivo no contiene un formato JSON válido");
-      }
-      if (!Array.isArray(parsedObject.blocks) || parsedObject.blocks.length === 0) {
-        throw new Error("El JSON debe contener al menos un bloque en 'blocks'");
-      }
-
-      appData = {
-        subtitle: parsedObject.subtitle || "SETLIST OFICIAL",
-        bandName: parsedObject.bandName || "COLAPSO",
-        customLogo: parsedObject.customLogo || null,
-        continuousNumbering: parsedObject.continuousNumbering !== undefined ? parsedObject.continuousNumbering : true,
-        blocks: parsedObject.blocks.map((b, idx) => ({
-          id: b.id || `b_${Date.now()}_${idx}`,
-          title: b.title || `BLOQUE ${idx + 1}`,
-          badge: b.badge || String(idx + 1),
-          songs: Array.isArray(b.songs) ? b.songs.map((s, sIdx) => ({
-            id: s.id || `s_${Date.now()}_${sIdx}`,
-            name: s.name || "Canción",
-            note: s.note || ""
-          })) : []
-        }))
-      };
-
-      saveData();
-      applyLogoState();
-      renderAll();
-      closeJsonModal();
-      showToast("¡Setlist importado y actualizado con éxito!");
-    }
-
-    function handleJsonFileUpload(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const parsed = JSON.parse(e.target.result);
-          loadAndApplyJson(parsed);
-        } catch (err) {
-          console.error("JSON parse error:", err);
-          showToast(err.message || "Error al leer el archivo JSON", "error");
-        }
-      };
-      reader.readAsText(file);
-    }
-
-    function importJsonFromTextarea() {
-      const raw = document.getElementById('jsonImportTextarea').value.trim();
-      if (!raw) {
-        showToast("Pega un código JSON válido primero", "warning");
-        return;
-      }
-
-      try {
-        const parsed = JSON.parse(raw);
-        loadAndApplyJson(parsed);
-      } catch (err) {
-        console.error("JSON parse error:", err);
-        showToast("Error de sintaxis en el JSON pegado", "error");
-      }
+      showToast(`${lines.length} temas añadidos`);
     }
 
     function openLogoModal() {
-      document.getElementById('inputBandName').value = appData.bandName || "COLAPSO";
       document.getElementById('inputLogoUrl').value = (appData.customLogo && !appData.customLogo.startsWith('data:')) ? appData.customLogo : "logo.png";
       document.getElementById('logoModal').classList.remove('hidden');
     }
@@ -1020,80 +831,174 @@ Hombre lobo en París"></textarea>
         appData.customLogo = evt.target.result;
         saveData();
         applyLogoState();
-        showToast("Imagen de logo cargada correctamente");
         closeLogoModal();
+        showToast("¡Logo cargado exitosamente!");
       };
       reader.readAsDataURL(file);
     });
 
     function saveLogoSettings() {
-      const name = document.getElementById('inputBandName').value.trim();
       const logoUrl = document.getElementById('inputLogoUrl').value.trim();
-
-      appData.bandName = name || "COLAPSO";
       if (logoUrl) {
         appData.customLogo = logoUrl;
+        saveData();
+        applyLogoState();
       }
-      saveData();
-      applyLogoState();
-      renderAll();
       closeLogoModal();
-      showToast("Ajustes de banda actualizados");
+      showToast("Ruta del logo actualizada");
     }
 
     function restoreOriginalLogo() {
       appData.customLogo = "logo.png";
-      const logoUrlInput = document.getElementById('inputLogoUrl');
-      if (logoUrlInput) logoUrlInput.value = "logo.png";
+      document.getElementById('inputLogoUrl').value = "logo.png";
       saveData();
       applyLogoState();
       closeLogoModal();
-      showToast("Logo restablecido a logo.png original");
+      showToast("Restablecido a logo.png");
     }
 
     function applyLogoState() {
       const imgEl = document.getElementById('customLogoImg');
+      const fallbackEl = document.getElementById('logoFallbackPlaceholder');
       const targetSrc = appData.customLogo || "logo.png";
 
       imgEl.onerror = function() {
-        // Fallback visual sutil si no encuentra la imagen en el entorno actual
-        imgEl.onerror = null;
-        imgEl.src = "https://placehold.co/700x180/09090b/dc2626?text=COLAPSO+(logo.png)";
+        // Show discreet fallback box without broken image icons
+        imgEl.classList.add('hidden');
+        fallbackEl.classList.remove('hidden');
+      };
+
+      imgEl.onload = function() {
+        imgEl.classList.remove('hidden');
+        fallbackEl.classList.add('hidden');
       };
 
       imgEl.src = targetSrc;
     }
 
-    function confirmReset() {
-      appData = JSON.parse(JSON.stringify(INITIAL_STATE));
+    function openJsonModal() {
+      try {
+        const jsonStr = JSON.stringify(appData, null, 2);
+        document.getElementById('jsonExportTextarea').value = jsonStr;
+        document.getElementById('jsonImportTextarea').value = "";
+        const fileInput = document.getElementById('jsonFileInput');
+        if (fileInput) fileInput.value = "";
+        document.getElementById('jsonModal').classList.remove('hidden');
+      } catch (err) {
+        console.error("JSON preview error:", err);
+      }
+    }
+
+    function closeJsonModal() {
+      document.getElementById('jsonModal').classList.add('hidden');
+    }
+
+    function downloadJsonFile() {
+      try {
+        const jsonString = JSON.stringify(appData, null, 2);
+        const blob = new Blob([jsonString], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `setlist-colapso-${Date.now()}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        showToast("Archivo JSON descargado");
+      } catch (e) {
+        showToast("Error al generar JSON", "error");
+      }
+    }
+
+    function copyJsonToClipboard() {
+      const textarea = document.getElementById('jsonExportTextarea');
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        showToast("¡JSON copiado al portapapeles!");
+      } catch (err) {
+        showToast("Selecciona y copia manualmente", "warning");
+      }
+    }
+
+    function loadAndApplyJson(parsedObject) {
+      if (!parsedObject || typeof parsedObject !== 'object' || !Array.isArray(parsedObject.blocks)) {
+        throw new Error("Formato de setlist no válido");
+      }
+
+      appData = {
+        subtitle: parsedObject.subtitle || "SETLIST OFICIAL",
+        bandName: parsedObject.bandName || "COLAPSO",
+        customLogo: parsedObject.customLogo || "logo.png",
+        continuousNumbering: true,
+        blocks: parsedObject.blocks.map((b, idx) => ({
+          id: b.id || `b_${Date.now()}_${idx}`,
+          title: b.title || `BLOQUE ${idx + 1}`,
+          badge: b.badge || String(idx + 1),
+          songs: Array.isArray(b.songs) ? b.songs.map((s, sIdx) => ({
+            id: s.id || `s_${Date.now()}_${sIdx}`,
+            name: s.name || "Canción",
+            note: s.note || ""
+          })) : []
+        }))
+      };
+
       saveData();
       applyLogoState();
       renderAll();
-      showToast("Lista restaurada al orden original");
+      closeJsonModal();
+      showToast("¡Setlist actualizado exitosamente!");
+    }
+
+    function handleJsonFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          loadAndApplyJson(parsed);
+        } catch (err) {
+          showToast("Error al leer archivo JSON", "error");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function importJsonFromTextarea() {
+      const raw = document.getElementById('jsonImportTextarea').value.trim();
+      if (!raw) return;
+      try {
+        const parsed = JSON.parse(raw);
+        loadAndApplyJson(parsed);
+      } catch (err) {
+        showToast("Error en el formato del JSON pegado", "error");
+      }
     }
 
     function exportAsImage() {
       const poster = document.getElementById('setlistPoster');
-      showToast("Generando imagen en alta calidad...", "info");
+      showToast("Generando póster en alta resolución...", "info");
 
       document.body.classList.add('capture-mode');
       window.scrollTo(0, 0);
 
       setTimeout(() => {
         html2canvas(poster, {
-          scale: 2,
-          backgroundColor: '#080809',
+          scale: 3, // Ultra-sharp 3x resolution for rock posters
+          backgroundColor: '#050506',
           useCORS: true,
           logging: false,
           scrollY: -window.scrollY,
           onclone: (clonedDoc) => {
-            // Guarantee dead-center text alignment on the badge numbers in the snapshot
+            // Guarantee dead-center circle numbers in html2canvas snapshot
             const badges = clonedDoc.querySelectorAll('.badge-circle');
             badges.forEach(badge => {
               badge.style.display = 'inline-block';
-              badge.style.width = '26px';
-              badge.style.height = '26px';
-              badge.style.lineHeight = '26px';
+              badge.style.width = '22px';
+              badge.style.height = '22px';
+              badge.style.lineHeight = '22px';
               badge.style.textAlign = 'center';
               badge.style.borderRadius = '50%';
               badge.style.backgroundColor = '#000000';
@@ -1102,30 +1007,27 @@ Hombre lobo en París"></textarea>
               badge.style.margin = '0';
               badge.style.fontFamily = 'Arial, sans-serif';
               badge.style.fontWeight = '900';
-              badge.style.fontSize = '13px';
+              badge.style.fontSize = '12px';
+              badge.style.verticalAlign = 'middle';
             });
           }
         }).then(canvas => {
           document.body.classList.remove('capture-mode');
-
           const link = document.createElement('a');
-          const cleanName = (appData.bandName || 'COLAPSO').toLowerCase().replace(/\s+/g, '-');
-          link.download = `setlist-${cleanName}-${Date.now()}.png`;
+          link.download = `setlist-colapso-${Date.now()}.png`;
           link.href = canvas.toDataURL('image/png');
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
-
-          showToast("¡Imagen del setlist descargada con éxito!", "success");
+          showToast("¡Imagen descargada con éxito!", "success");
         }).catch(err => {
           document.body.classList.remove('capture-mode');
           console.error("Export error:", err);
-          showToast("Hubo un error al generar la imagen", "error");
+          showToast("Error al exportar la imagen", "error");
         });
-      }, 250);
+      }, 200);
     }
 
-    // Toast helper notification
     function showToast(message, type = "success") {
       const toast = document.getElementById('toast');
       const msg = document.getElementById('toastMsg');
@@ -1149,7 +1051,7 @@ Hombre lobo en París"></textarea>
       window.toastTimer = setTimeout(() => {
         toast.classList.add('translate-y-24', 'opacity-0');
         toast.classList.remove('translate-y-0', 'opacity-100');
-      }, 2800);
+      }, 2400);
     }
 
     window.addEventListener('DOMContentLoaded', () => {
