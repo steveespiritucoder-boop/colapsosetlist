@@ -152,13 +152,19 @@
     .logo-slot {
       width: 100%;
       max-width: 620px;
-      height: auto !important;
+      height: auto;
       display: flex;
       align-items: center;
       justify-content: center;
       margin: 8px auto 14px auto;
       position: relative;
       box-sizing: border-box;
+      transition: min-height 0.2s ease;
+    }
+
+    /* Cuando no hay logo, le damos 220px de altura para que el cartel se vea imponente y fácil de pulsar */
+    .logo-slot.no-logo {
+      min-height: 220px;
     }
 
     .band-logo-img {
@@ -167,6 +173,22 @@
       height: auto !important;
       display: block !important;
       margin: 0 auto !important;
+      box-sizing: border-box;
+    }
+
+    .logo-placeholder-box {
+      width: 100%;
+      min-height: 210px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      border: 2px dashed rgba(192, 16, 26, 0.7);
+      background-color: rgba(192, 16, 26, 0.08);
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: center;
       box-sizing: border-box;
     }
 
@@ -318,11 +340,11 @@
              onclick="openLogoModal()">
 
         <div id="logoFallbackPlaceholder"
-             class="hidden flex-col items-center justify-center p-3 border-2 border-dashed border-red-800/80 bg-red-950/20 rounded cursor-pointer absolute inset-1 text-center"
+             class="hidden logo-placeholder-box"
              onclick="openLogoModal()">
-          <i class="fa-solid fa-arrow-up-from-bracket text-red-500 text-xl mb-1.5"></i>
-          <span class="font-bebas text-xl text-vintageBeige tracking-wider">CLICK PARA SUBIR LOGO.PNG</span>
-          <span class="text-[10px] text-zinc-400 font-mono">O coloca logo.png en tu carpeta de GitHub</span>
+          <i class="fa-solid fa-arrow-up-from-bracket text-red-500 text-3xl mb-2"></i>
+          <span class="font-bebas text-2xl text-vintageBeige tracking-widest">CLICK PARA SUBIR LOGO.PNG</span>
+          <span class="text-xs text-zinc-400 font-mono mt-1">O coloca logo.png en tu carpeta de GitHub</span>
         </div>
 
         <button onclick="openLogoModal()"
@@ -772,7 +794,7 @@
 
         const titleEl = document.createElement('div');
         titleEl.className = "block-title-text";
-        titleEl.innerHTML = `<span class="select-none text-black font-black mr-1.5">-</span><span contenteditable="true" onkeydown="preventMultiline(event)" onblur="updateBlockTitle('${block.id}', this.innerText)" class="leading-normal">${escapeHtml(block.title)}</span>`;
+        titleEl.innerHTML = `<span class="select-none text-black font-black mr-1" style="line-height:1; vertical-align:middle;">-</span><span contenteditable="true" onkeydown="preventMultiline(event)" onblur="updateBlockTitle('${block.id}', this.innerText)" style="line-height:1; vertical-align:middle;">${escapeHtml(block.title)}</span>`;
 
         const actionsDiv = document.createElement('div');
         actionsDiv.className = "edit-only-control flex items-center gap-1 text-[10px] flex-shrink-0 ml-auto";
@@ -1046,17 +1068,23 @@
     function applyLogoState() {
       const imgEl = document.getElementById('customLogoImg');
       const fallbackEl = document.getElementById('logoFallbackPlaceholder');
+      const containerEl = document.getElementById('logoContainer');
       const targetSrc = appData.customLogo || "logo.png";
+
       imgEl.onerror = function() {
         imgEl.classList.add('hidden');
         fallbackEl.classList.remove('hidden');
         fallbackEl.classList.add('flex');
+        if (containerEl) containerEl.classList.add('no-logo');
       };
+
       imgEl.onload = function() {
         imgEl.classList.remove('hidden');
         fallbackEl.classList.add('hidden');
         fallbackEl.classList.remove('flex');
+        if (containerEl) containerEl.classList.remove('no-logo');
       };
+
       imgEl.src = targetSrc;
     }
 
@@ -1098,6 +1126,14 @@
               clonedLogo.style.height = 'auto';
               clonedLogo.style.maxHeight = 'none';
             }
+            // Asegurar que en el render de html2canvas los textos del header mantengan su posición central
+            clonedDoc.querySelectorAll('.block-header-bar').forEach(bar => {
+              bar.style.display = 'flex';
+              bar.style.alignItems = 'center';
+            });
+            clonedDoc.querySelectorAll('.badge-circle').forEach(badge => {
+              badge.style.lineHeight = badge.offsetHeight + 'px';
+            });
           }
         });
 
