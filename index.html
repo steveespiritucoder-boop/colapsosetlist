@@ -77,11 +77,13 @@
       box-shadow: 0 6px 18px rgba(0,0,0,0.7);
     }
 
-    /* ============ HEADER DE BLOQUE: FLEXBOX ESTABLE PARA HTML2CANVAS ============ */
+    /* ============ HEADER DE BLOQUE: GEOMETRÍA RÍGIDA SIN FLEX ANIDADO (HTML2CANVAS SAFE) ============ */
     .block-header-bar {
       background-color: #c0101a;
-      padding: 6px 10px;
+      padding: 0 10px;
+      height: 44px;
       min-height: 44px;
+      max-height: 44px;
       display: flex;
       align-items: center;
       box-sizing: border-box;
@@ -90,61 +92,73 @@
 
     @media (min-width: 640px) {
       .block-header-bar {
+        height: 48px;
         min-height: 48px;
-        padding: 7px 12px;
+        max-height: 48px;
+        padding: 0 12px;
       }
     }
 
+    /* El círculo NO usa flexbox: usa line-height estricto idéntico a su alto para centrado matemático perfecto en canvas */
     .badge-circle {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 28px;
-      height: 28px;
-      min-width: 28px;
-      min-height: 28px;
-      border-radius: 9999px;
-      background-color: #000000;
-      color: #ffffff;
-      font-family: 'Montserrat', sans-serif;
-      font-weight: 900;
-      font-size: 15px;
-      line-height: 1;
-      text-align: center;
-      box-sizing: border-box;
-      flex-shrink: 0;
+      display: inline-block !important;
+      width: 28px !important;
+      height: 28px !important;
+      min-width: 28px !important;
+      max-width: 28px !important;
+      line-height: 28px !important;
+      border-radius: 50% !important;
+      background-color: #000000 !important;
+      color: #ffffff !important;
+      font-family: 'Montserrat', sans-serif !important;
+      font-weight: 900 !important;
+      font-size: 15px !important;
+      text-align: center !important;
+      vertical-align: middle !important;
+      box-sizing: border-box !important;
+      flex-shrink: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
     }
 
     @media (min-width: 640px) {
       .badge-circle {
-        width: 32px;
-        height: 32px;
-        min-width: 32px;
-        min-height: 32px;
-        font-size: 17px;
+        width: 32px !important;
+        height: 32px !important;
+        min-width: 32px !important;
+        max-width: 32px !important;
+        line-height: 32px !important;
+        font-size: 17px !important;
       }
     }
 
+    /* El título es un bloque de línea simple sin display:flex */
     .block-title-text {
-      font-family: 'Montserrat', sans-serif;
-      font-weight: 900;
-      color: #000000;
-      letter-spacing: 0.05em;
-      line-height: 1.3;
-      text-transform: uppercase;
-      font-size: 15px;
-      display: flex;
-      align-items: center;
-      min-width: 0;
-      flex: 1;
-      margin-left: 8px;
-      overflow: visible;
+      font-family: 'Montserrat', sans-serif !important;
+      font-weight: 900 !important;
+      color: #000000 !important;
+      letter-spacing: 0.04em !important;
+      line-height: 44px !important;
+      height: 44px !important;
+      text-transform: uppercase !important;
+      font-size: 15px !important;
+      display: inline-block !important;
+      vertical-align: middle !important;
+      min-width: 0 !important;
+      flex: 1 !important;
+      margin-left: 8px !important;
+      padding: 0 !important;
+      overflow: hidden !important;
+      white-space: nowrap !important;
+      text-overflow: ellipsis !important;
     }
 
     @media (min-width: 640px) {
       .block-title-text {
-        font-size: 17px;
-        margin-left: 10px;
+        font-size: 17px !important;
+        line-height: 48px !important;
+        height: 48px !important;
+        margin-left: 10px !important;
       }
     }
 
@@ -794,7 +808,7 @@
 
         const titleEl = document.createElement('div');
         titleEl.className = "block-title-text";
-        titleEl.innerHTML = `<span class="select-none text-black font-black mr-1" style="line-height:1; vertical-align:middle;">-</span><span contenteditable="true" onkeydown="preventMultiline(event)" onblur="updateBlockTitle('${block.id}', this.innerText)" style="line-height:1; vertical-align:middle;">${escapeHtml(block.title)}</span>`;
+        titleEl.innerHTML = `<span class="select-none text-black font-black mr-1">-</span><span contenteditable="true" onkeydown="preventMultiline(event)" onblur="updateBlockTitle('${block.id}', this.innerText)">${escapeHtml(block.title)}</span>`;
 
         const actionsDiv = document.createElement('div');
         actionsDiv.className = "edit-only-control flex items-center gap-1 text-[10px] flex-shrink-0 ml-auto";
@@ -1093,8 +1107,41 @@
       showToast("Generando imagen...", "info");
       document.body.classList.add('exporting');
 
+      // Diagnóstico detallado en consola F12
+      console.group("🛠️ [DIAGNÓSTICO EXPORTACIÓN PNG - HTML2CANVAS]");
+      console.log("1. Nodo objetivo:", posterNode);
+      console.log("2. Ancho / Alto cliente:", posterNode.clientWidth, "x", posterNode.clientHeight);
+      console.log("3. Pixel Ratio dispositivo:", window.devicePixelRatio);
+      
+      const sampleBar = document.querySelector('.block-header-bar');
+      const sampleBadge = document.querySelector('.badge-circle');
+      const sampleTitle = document.querySelector('.block-title-text');
+      if (sampleBar && sampleBadge && sampleTitle) {
+        console.table({
+          "Header Bar": {
+            "Alto offset": sampleBar.offsetHeight + "px",
+            "Padding Top": window.getComputedStyle(sampleBar).paddingTop,
+            "Padding Bottom": window.getComputedStyle(sampleBar).paddingBottom,
+            "Display": window.getComputedStyle(sampleBar).display
+          },
+          "Badge Circle": {
+            "Alto": sampleBadge.offsetHeight + "px",
+            "Line Height": window.getComputedStyle(sampleBadge).lineHeight,
+            "Display": window.getComputedStyle(sampleBadge).display
+          },
+          "Title Text": {
+            "Alto": sampleTitle.offsetHeight + "px",
+            "Line Height": window.getComputedStyle(sampleTitle).lineHeight,
+            "Display": window.getComputedStyle(sampleTitle).display
+          }
+        });
+      }
+
       try {
-        if (document.fonts && document.fonts.ready) await document.fonts.ready;
+        if (document.fonts && document.fonts.ready) {
+          await document.fonts.ready;
+          console.log("4. Fuentes listas: Montserrat y Bebas Neue cargadas.");
+        }
 
         const logoImg = document.getElementById('customLogoImg');
         if (logoImg && !logoImg.classList.contains('hidden') && logoImg.src) {
@@ -1113,39 +1160,75 @@
           backgroundColor: '#060607',
           useCORS: true,
           allowTaint: false,
-          logging: false,
+          logging: true, // Habilita logs nativos de html2canvas en consola F12
           scrollX: 0,
           scrollY: 0,
           onclone: (clonedDoc) => {
+            console.log("5. onclone ejecutado: sanitizando clon para html2canvas...");
+            
             clonedDoc.querySelectorAll('.edit-only-control').forEach(el => {
               el.style.display = 'none';
             });
+
             const clonedSubtitle = clonedDoc.getElementById('posterSubtitle');
             if (clonedSubtitle) {
               clonedSubtitle.style.lineHeight = '1.3';
               clonedSubtitle.style.marginBottom = '18px';
               clonedSubtitle.style.paddingBottom = '8px';
             }
+
             const clonedLogoSlot = clonedDoc.getElementById('logoContainer');
             if (clonedLogoSlot) {
               clonedLogoSlot.style.marginTop = '14px';
+              clonedLogoSlot.style.minHeight = 'auto';
             }
+
             const clonedLogo = clonedDoc.getElementById('customLogoImg');
             if (clonedLogo) {
               clonedLogo.style.width = '80%';
               clonedLogo.style.height = 'auto';
               clonedLogo.style.maxHeight = 'none';
             }
-            // Asegurar que en el render de html2canvas los textos del header mantengan su posición central
+
+            // Normalización estricta de las barras de bloque en el clon:
+            // Cero padding vertical y altura de línea idéntica a la altura del elemento
             clonedDoc.querySelectorAll('.block-header-bar').forEach(bar => {
+              bar.style.paddingTop = '0px';
+              bar.style.paddingBottom = '0px';
+              bar.style.height = '46px';
+              bar.style.maxHeight = '46px';
+              bar.style.minHeight = '46px';
               bar.style.display = 'flex';
               bar.style.alignItems = 'center';
+              bar.style.boxSizing = 'border-box';
             });
+
             clonedDoc.querySelectorAll('.badge-circle').forEach(badge => {
-              badge.style.lineHeight = badge.offsetHeight + 'px';
+              badge.style.display = 'inline-block';
+              badge.style.width = '30px';
+              badge.style.height = '30px';
+              badge.style.minWidth = '30px';
+              badge.style.lineHeight = '30px';
+              badge.style.textAlign = 'center';
+              badge.style.verticalAlign = 'middle';
+              badge.style.borderRadius = '50%';
+              badge.style.margin = '0';
+              badge.style.padding = '0';
+            });
+
+            clonedDoc.querySelectorAll('.block-title-text').forEach(t => {
+              t.style.display = 'inline-block';
+              t.style.lineHeight = '46px';
+              t.style.height = '46px';
+              t.style.verticalAlign = 'middle';
+              t.style.margin = '0 0 0 10px';
+              t.style.padding = '0';
             });
           }
         });
+
+        console.log("6. Canvas generado exitosamente con dimensiones:", canvas.width, "x", canvas.height);
+        console.groupEnd();
 
         const dataUrl = canvas.toDataURL('image/png');
         if (!dataUrl || dataUrl.length < 200) throw new Error("Render vacío");
@@ -1157,6 +1240,7 @@
         showToast("¡Póster descargado!", "success");
       } catch (err) {
         console.error("Export error:", err);
+        console.groupEnd();
         showToast("Error al generar imagen: " + (err.message || ""), "error");
       } finally {
         document.body.classList.remove('exporting');
