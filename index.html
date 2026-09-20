@@ -14,9 +14,9 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
-    tailwind.config = {    
+    tailwind.config = {
       theme: {
-        extend: {anon  
+        extend: {
           colors: {
             rockRed: '#c0101a',
             rockRedBright: '#e51723',
@@ -446,8 +446,8 @@
     // COLOCA AQUÍ TUS CREDENCIALES DIRECTAS DE SUPABASE
     // (Búscalas en: Project Settings > API > Project URL y Project API keys)
     // ============================================================================
-    const SUPABASE_URL = "https://kdjrfpxjrprfzdmuqqnm.supabase.co"; // <-- Pega tu Project URL aquí
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkanJmcHhqcnByZnpkbXVxcW5tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk4NDI2OTcsImV4cCI6MjEwNTQxODY5N30.WA8YXc0lMquj8jP6wRubwQ4DZl7V_rBLLPIGk8NaNbk";                // <-- Pega tu Anon Key aquí
+    const SUPABASE_URL = "https://tu-proyecto.supabase.co"; // <-- Pega tu Project URL aquí
+    const SUPABASE_KEY = "tu-anon-key-aqui";                // <-- Pega tu Anon Key aquí
     // ============================================================================
 
     const SETLIST_DOCUMENT_ID = "colapso-oficial";
@@ -730,10 +730,10 @@
 
         const titleEl = document.createElement('div');
         titleEl.className = "block-title-text";
-        titleEl.innerHTML = `<span class="select-none" style="color:#000;font-weight:900;">-&nbsp;</span><span contenteditable="true" onkeydown="preventMultiline(event)" onblur="updateBlockTitle('${block.id}', this.innerText)">${escapeHtml(block.title)}</span>`;
+        titleEl.innerHTML = `<span class="select-none text-black font-black mr-1">-</span><span contenteditable="true" onkeydown="preventMultiline(event)" onblur="updateBlockTitle('${block.id}', this.innerText)" class="truncate">${escapeHtml(block.title)}</span>`;
 
         const actionsDiv = document.createElement('div');
-        actionsDiv.className = "edit-only-control flex items-center gap-1 text-[10px] flex-shrink-0";
+        actionsDiv.className = "edit-only-control flex items-center gap-1 text-[10px] flex-shrink-0 ml-auto";
         actionsDiv.innerHTML = `
           <button onclick="openBulkModalForBlock('${block.id}')" class="p-0.5 px-1 bg-black/40 hover:bg-black/70 text-white rounded" title="Pegar canciones">
             <i class="fa-solid fa-paste"></i>
