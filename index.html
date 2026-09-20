@@ -77,37 +77,36 @@
       box-shadow: 0 6px 18px rgba(0,0,0,0.7);
     }
 
-    /* ============ HEADER DE BLOQUE: FORMATO CARTEL ============ */
+    /* ============ HEADER DE BLOQUE: FLEXBOX ESTABLE PARA HTML2CANVAS ============ */
     .block-header-bar {
       background-color: #c0101a;
-      padding: 7px 10px;
-      min-height: 42px;
-      display: grid;
-      grid-template-columns: 28px 1fr auto;
+      padding: 6px 10px;
+      min-height: 44px;
+      display: flex;
       align-items: center;
-      column-gap: 8px;
       box-sizing: border-box;
+      overflow: visible;
     }
 
     @media (min-width: 640px) {
       .block-header-bar {
         min-height: 48px;
-        grid-template-columns: 34px 1fr auto;
-        padding: 8px 14px;
-        column-gap: 10px;
+        padding: 7px 12px;
       }
     }
 
     .badge-circle {
-      display: flex;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
       width: 28px;
       height: 28px;
-      border-radius: 50%;
+      min-width: 28px;
+      min-height: 28px;
+      border-radius: 9999px;
       background-color: #000000;
       color: #ffffff;
-      font-family: 'Arial Black', Arial, sans-serif;
+      font-family: 'Montserrat', sans-serif;
       font-weight: 900;
       font-size: 15px;
       line-height: 1;
@@ -118,57 +117,56 @@
 
     @media (min-width: 640px) {
       .badge-circle {
-        width: 34px;
-        height: 34px;
-        font-size: 18px;
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        min-height: 32px;
+        font-size: 17px;
       }
     }
 
     .block-title-text {
-      font-family: 'Oswald', 'Montserrat', sans-serif;
+      font-family: 'Montserrat', sans-serif;
       font-weight: 900;
       color: #000000;
-      letter-spacing: 0.06em;
-      line-height: 1.2;
+      letter-spacing: 0.05em;
+      line-height: 1.3;
       text-transform: uppercase;
-      font-size: 16px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
       min-width: 0;
+      flex: 1;
+      margin-left: 8px;
+      overflow: visible;
     }
 
     @media (min-width: 640px) {
       .block-title-text {
-        font-size: 19px;
+        font-size: 17px;
+        margin-left: 10px;
       }
     }
 
+    /* ============ LOGO: ALTURA AUTOMÁTICA Y PROPORCIONES PRESERVADAS ============ */
     .logo-slot {
       width: 100%;
-      height: 170px;
+      max-width: 620px;
+      height: auto !important;
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
-      margin: 8px 0 6px 0;
+      margin: 8px auto 14px auto;
       position: relative;
-      flex-shrink: 0;
-    }
-
-    @media (min-width: 640px) {
-      .logo-slot { height: 220px; }
+      box-sizing: border-box;
     }
 
     .band-logo-img {
-      width: 100% !important;
-      height: 100% !important;
+      width: 80% !important;
       max-width: 100% !important;
-      max-height: 100% !important;
-      object-fit: contain !important;
+      height: auto !important;
       display: block !important;
       margin: 0 auto !important;
-      padding: 4px;
       box-sizing: border-box;
     }
 
@@ -453,6 +451,8 @@
 
     let supabaseClient = null;
     let realtimeChannel = null;
+    let pollingInterval = null;
+    let lastKnownTimestamp = null;
     let saveTimeout = null;
     let isRemoteUpdate = false;
     let isLoading = true;
@@ -514,10 +514,10 @@
         const { createClient } = window.supabase;
         supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // 1. Cargar datos remotos exclusivamente desde Supabase
+        // 1. Cargar datos remotos exclusivamente desde Supabase (HTTP REST / fetch)
         const { data, error } = await supabaseClient
           .from("setlists")
-          .select("data")
+          .select("data, updated_at")
           .eq("id", SETLIST_DOCUMENT_ID)
           .maybeSingle();
 
@@ -527,13 +527,15 @@
           showToast("Error al conectar con Supabase: " + error.message, "error");
         } else if (data && data.data) {
           appData = data.data;
+          lastKnownTimestamp = data.updated_at;
           updateSyncStatus("synced");
         } else {
           // Si la fila aún no existe, inicializar vacío
           await supabaseClient
             .from("setlists")
-            .insert({ id: SETLIST_DOCUMENT_ID, data: EMPTY_STATE });
+            .insert({ id: SETLIST_DOCUMENT_ID, data: EMPTY_STATE, updated_at: new Date().toISOString() });
           appData = JSON.parse(JSON.stringify(EMPTY_STATE));
+          lastKnownTimestamp = new Date().toISOString();
           updateSyncStatus("synced");
         }
 
@@ -541,8 +543,8 @@
         applyLogoState();
         renderAll();
 
-        // 2. Suscribirse a cambios en tiempo real
-        setupRealtime();
+        // 2. Iniciar sincronización en vivo (con fallback automático a HTTP si WebSocket está restringido)
+        setupLiveSync();
       } catch (err) {
         console.error("Init Supabase error:", err);
         isLoading = false;
@@ -551,33 +553,71 @@
       }
     }
 
-    function setupRealtime() {
-      if (!supabaseClient) return;
+    function setupLiveSync() {
+      // Intentar suscripción WebSocket de Supabase en un bloque protegido
+      try {
+        if (realtimeChannel && supabaseClient) {
+          supabaseClient.removeChannel(realtimeChannel);
+        }
 
-      if (realtimeChannel) {
-        supabaseClient.removeChannel(realtimeChannel);
-      }
-
-      realtimeChannel = supabaseClient
-        .channel('setlists_channel')
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'setlists', filter: `id=eq.${SETLIST_DOCUMENT_ID}` },
-          (payload) => {
-            if (isRemoteUpdate) return;
-            if (payload.new && payload.new.data) {
-              appData = payload.new.data;
-              applyLogoState();
-              renderAll();
-              showToast("Setlist actualizado por otro miembro de la banda", "info");
+        realtimeChannel = supabaseClient
+          .channel('setlists_channel')
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'setlists', filter: `id=eq.${SETLIST_DOCUMENT_ID}` },
+            (payload) => {
+              if (isRemoteUpdate) return;
+              if (payload.new && payload.new.data) {
+                lastKnownTimestamp = payload.new.updated_at;
+                appData = payload.new.data;
+                applyLogoState();
+                renderAll();
+                showToast("Setlist actualizado por otro miembro de la banda", "info");
+              }
             }
-          }
-        )
-        .subscribe((status) => {
+          );
+
+        realtimeChannel.subscribe((status, err) => {
           if (status === 'SUBSCRIBED') {
             updateSyncStatus("synced");
+          } else if (status === 'CHANNEL_ERROR' || err) {
+            console.warn("WebSocket no disponible, activando sondeo HTTP continuo.");
+            enablePollingFallback();
           }
         });
+      } catch (wsError) {
+        // En caso de que el entorno bloquee la creación de WebSockets (Canvas / iframe CSP)
+        console.warn("WebSocket bloqueado por el entorno Canvas. Activando sondeo HTTP continuo.");
+        enablePollingFallback();
+      }
+    }
+
+    function enablePollingFallback() {
+      if (pollingInterval) clearInterval(pollingInterval);
+      updateSyncStatus("synced");
+
+      // Consultar cambios periódicamente mediante llamadas HTTP REST seguras
+      pollingInterval = setInterval(async () => {
+        if (isRemoteUpdate || !supabaseClient) return;
+
+        try {
+          const { data, error } = await supabaseClient
+            .from("setlists")
+            .select("data, updated_at")
+            .eq("id", SETLIST_DOCUMENT_ID)
+            .maybeSingle();
+
+          if (!error && data && data.updated_at !== lastKnownTimestamp) {
+            lastKnownTimestamp = data.updated_at;
+            appData = data.data;
+            applyLogoState();
+            renderAll();
+            showToast("Setlist actualizado por otro miembro de la banda", "info");
+          }
+        } catch (pollErr) {
+          console.debug("Polling check error:", pollErr);
+        }
+      }, 3500);
     }
 
     function saveData() {
@@ -593,12 +633,15 @@
       saveTimeout = setTimeout(async () => {
         try {
           isRemoteUpdate = true;
+          const currentTimestamp = new Date().toISOString();
+          lastKnownTimestamp = currentTimestamp;
+
           const { error } = await supabaseClient
             .from("setlists")
             .upsert({
               id: SETLIST_DOCUMENT_ID,
               data: appData,
-              updated_at: new Date().toISOString()
+              updated_at: currentTimestamp
             });
 
           if (error) {
@@ -612,7 +655,7 @@
           console.error("Network save error:", err);
           updateSyncStatus("error");
         } finally {
-          setTimeout(() => { isRemoteUpdate = false; }, 400);
+          setTimeout(() => { isRemoteUpdate = false; }, 600);
         }
       }, 500); // 500ms debounce
     }
@@ -729,7 +772,7 @@
 
         const titleEl = document.createElement('div');
         titleEl.className = "block-title-text";
-        titleEl.innerHTML = `<span class="select-none text-black font-black mr-1">-</span><span contenteditable="true" onkeydown="preventMultiline(event)" onblur="updateBlockTitle('${block.id}', this.innerText)" class="truncate">${escapeHtml(block.title)}</span>`;
+        titleEl.innerHTML = `<span class="select-none text-black font-black mr-1.5">-</span><span contenteditable="true" onkeydown="preventMultiline(event)" onblur="updateBlockTitle('${block.id}', this.innerText)" class="leading-normal">${escapeHtml(block.title)}</span>`;
 
         const actionsDiv = document.createElement('div');
         actionsDiv.className = "edit-only-control flex items-center gap-1 text-[10px] flex-shrink-0 ml-auto";
@@ -1049,6 +1092,12 @@
             clonedDoc.querySelectorAll('.edit-only-control').forEach(el => {
               el.style.display = 'none';
             });
+            const clonedLogo = clonedDoc.getElementById('customLogoImg');
+            if (clonedLogo) {
+              clonedLogo.style.width = '80%';
+              clonedLogo.style.height = 'auto';
+              clonedLogo.style.maxHeight = 'none';
+            }
           }
         });
 
