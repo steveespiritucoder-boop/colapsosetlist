@@ -328,7 +328,7 @@
           contenteditable="true"
           onblur="updateSubtitle(this.innerText)"
           onkeydown="preventMultiline(event)"
-          class="font-bebas text-5xl sm:text-6xl lg:text-7xl tracking-[0.24em] pl-[0.24em] text-[#dfd8c8] uppercase leading-[1.05] py-1 select-none">
+          class="font-bebas text-5xl sm:text-6xl lg:text-7xl tracking-[0.24em] pl-[0.24em] text-[#dfd8c8] uppercase select-none">
         SETLIST OFICIAL
       </h2>
 
@@ -1120,6 +1120,16 @@
             clonedDoc.querySelectorAll('.edit-only-control').forEach(el => {
               el.style.display = 'none';
             });
+            const clonedSubtitle = clonedDoc.getElementById('posterSubtitle');
+            if (clonedSubtitle) {
+              clonedSubtitle.style.lineHeight = '1.3';
+              clonedSubtitle.style.marginBottom = '18px';
+              clonedSubtitle.style.paddingBottom = '8px';
+            }
+            const clonedLogoSlot = clonedDoc.getElementById('logoContainer');
+            if (clonedLogoSlot) {
+              clonedLogoSlot.style.marginTop = '14px';
+            }
             const clonedLogo = clonedDoc.getElementById('customLogoImg');
             if (clonedLogo) {
               clonedLogo.style.width = '80%';
