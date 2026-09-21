@@ -1177,6 +1177,7 @@
               clonedPoster.classList.add('force-desktop-export');
             }
 
+            // 2. Forzar el contenedor de bloques SIEMPRE a 2 columnas en el PNG
             // 2. Forzar el contenedor de bloques siempre a 2 columnas
             const clonedBlocksContainer = clonedDoc.getElementById('blocksContainer');
             if (clonedBlocksContainer) {
@@ -1216,7 +1217,7 @@
               }
             });
 
-            clonedDoc.querySelectorAll('.clone-split-grid').forEach(g => {
+            clonedDoc.querySelectorAll('.split-songs-grid').forEach(g => {
               g.style.display = 'grid';
               g.style.gridTemplateColumns = 'repeat(2, minmax(0, 1fr))';
               g.style.columnGap = '12px';
