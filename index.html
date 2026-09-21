@@ -788,15 +788,15 @@
       `;
 
       const controls = document.createElement('div');
-      controls.className = "edit-only-control flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ml-1 self-center";
+      controls.className = "edit-only-control flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity flex-shrink-0 ml-1.5 self-center";
       controls.innerHTML = `
-        <button onclick="moveSong('${block.id}', '${song.id}', -1)" ${songIdx === 0 ? 'disabled' : ''} class="p-0.5 text-zinc-500 hover:text-white disabled:opacity-20 text-[9px]" title="Subir">
+        <button onclick="moveSong('${block.id}', '${song.id}', -1)" ${songIdx === 0 ? 'disabled' : ''} class="w-6 h-6 flex items-center justify-center rounded bg-zinc-800/90 hover:bg-zinc-700 text-zinc-300 hover:text-white disabled:opacity-20 transition text-[11px]" title="Subir tema">
           <i class="fa-solid fa-chevron-up"></i>
         </button>
-        <button onclick="moveSong('${block.id}', '${song.id}', 1)" ${songIdx === block.songs.length - 1 ? 'disabled' : ''} class="p-0.5 text-zinc-500 hover:text-white disabled:opacity-20 text-[9px]" title="Bajar">
+        <button onclick="moveSong('${block.id}', '${song.id}', 1)" ${songIdx === block.songs.length - 1 ? 'disabled' : ''} class="w-6 h-6 flex items-center justify-center rounded bg-zinc-800/90 hover:bg-zinc-700 text-zinc-300 hover:text-white disabled:opacity-20 transition text-[11px]" title="Bajar tema">
           <i class="fa-solid fa-chevron-down"></i>
         </button>
-        <button onclick="deleteSong('${block.id}', '${song.id}')" class="p-0.5 text-zinc-600 hover:text-red-400 text-[10px]" title="Eliminar">
+        <button onclick="deleteSong('${block.id}', '${song.id}')" class="w-6 h-6 flex items-center justify-center rounded bg-zinc-800/90 hover:bg-red-600 text-red-400 hover:text-white transition text-xs" title="Eliminar tema">
           <i class="fa-solid fa-xmark"></i>
         </button>
       `;
@@ -857,19 +857,19 @@
         titleEl.innerHTML = `<span class="select-none text-black font-black mr-1">-</span><span contenteditable="true" onkeydown="preventMultiline(event)" onblur="updateBlockTitle('${block.id}', this.innerText)">${escapeHtml(block.title)}</span>`;
 
         const actionsDiv = document.createElement('div');
-        actionsDiv.className = "edit-only-control flex items-center gap-1 text-[10px] flex-shrink-0 ml-auto";
+        actionsDiv.className = "edit-only-control flex items-center gap-1 text-[11px] flex-shrink-0 ml-auto";
         actionsDiv.innerHTML = `
-          <button onclick="openBulkModalForBlock('${block.id}')" class="p-0.5 px-1 bg-black/40 hover:bg-black/70 text-white rounded" title="Pegar canciones">
-            <i class="fa-solid fa-paste"></i>
+          <button onclick="openBulkModalForBlock('${block.id}')" class="w-6 h-6 flex items-center justify-center bg-black/60 hover:bg-black text-zinc-200 hover:text-white rounded transition" title="Pegar canciones">
+            <i class="fa-solid fa-paste text-[10px]"></i>
           </button>
-          <button onclick="moveBlock('${block.id}', -1)" ${blockIndex === 0 ? 'disabled' : ''} class="p-0.5 px-1 bg-black/40 hover:bg-black/70 disabled:opacity-20 text-white rounded" title="Subir bloque">
-            <i class="fa-solid fa-arrow-up"></i>
+          <button onclick="moveBlock('${block.id}', -1)" ${blockIndex === 0 ? 'disabled' : ''} class="w-6 h-6 flex items-center justify-center bg-black/60 hover:bg-black disabled:opacity-20 text-zinc-200 hover:text-white rounded transition" title="Subir bloque">
+            <i class="fa-solid fa-arrow-up text-[10px]"></i>
           </button>
-          <button onclick="moveBlock('${block.id}', 1)" ${blockIndex === appData.blocks.length - 1 ? 'disabled' : ''} class="p-0.5 px-1 bg-black/40 hover:bg-black/70 disabled:opacity-20 text-white rounded" title="Bajar bloque">
-            <i class="fa-solid fa-arrow-down"></i>
+          <button onclick="moveBlock('${block.id}', 1)" ${blockIndex === appData.blocks.length - 1 ? 'disabled' : ''} class="w-6 h-6 flex items-center justify-center bg-black/60 hover:bg-black disabled:opacity-20 text-zinc-200 hover:text-white rounded transition" title="Bajar bloque">
+            <i class="fa-solid fa-arrow-down text-[10px]"></i>
           </button>
-          <button onclick="requestDeleteBlock('${block.id}')" class="p-0.5 px-1 bg-black/40 hover:bg-black text-red-300 hover:text-white rounded" title="Eliminar bloque">
-            <i class="fa-solid fa-trash-can"></i>
+          <button onclick="requestDeleteBlock('${block.id}')" class="w-6 h-6 flex items-center justify-center bg-black/60 hover:bg-red-800 text-red-300 hover:text-white rounded transition" title="Eliminar bloque">
+            <i class="fa-solid fa-trash-can text-[10px]"></i>
           </button>
         `;
 
@@ -1032,7 +1032,9 @@
       const block = appData.blocks.find(b => b.id === blockId);
       if (block) {
         block.songs = block.songs.filter(s => s.id !== songId);
-        renderAll(); saveData();
+        renderAll();
+        saveData();
+        showToast("Tema eliminado", "warning");
       }
     }
 
