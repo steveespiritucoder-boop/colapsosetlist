@@ -11,6 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@500;600;700;800;900&family=Oswald:wght@600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
@@ -326,10 +327,52 @@
           <span>Logo</span>
         </button>
 
-        <button onclick="exportAsImage()" class="flex items-center gap-1.5 px-3 py-1 bg-red-600 hover:bg-red-700 text-white font-black text-xs rounded shadow shadow-red-950 transition active:scale-95">
-          <i class="fa-solid fa-camera text-[10px]"></i>
-          <span>Descargar PNG</span>
-        </button>
+        <!-- MENÚ DESPLEGABLE DE DESCARGA (PNG & PDF) -->
+        <div class="relative">
+          <button id="downloadMenuBtn" onclick="toggleDownloadMenu(event)" class="flex items-center gap-1.5 px-3 py-1 bg-red-600 hover:bg-red-700 text-white font-black text-xs rounded shadow shadow-red-950 transition active:scale-95">
+            <i class="fa-solid fa-download text-[10px]"></i>
+            <span>Descargar</span>
+            <i class="fa-solid fa-chevron-down text-[9px] ml-0.5"></i>
+          </button>
+
+          <div id="downloadDropdown" class="hidden absolute right-0 mt-2 w-64 bg-zinc-900 border border-red-900/80 rounded-xl shadow-2xl p-2.5 z-50 divide-y divide-zinc-800 text-left">
+            <!-- Opción 1: Cartel Oficial 2 Columnas -->
+            <div class="pb-2">
+              <div class="text-[10px] font-bold uppercase tracking-wider text-red-400 mb-1.5 flex items-center gap-1">
+                <i class="fa-solid fa-tv text-[10px]"></i>
+                <span>Cartel Escenario (2 Cols)</span>
+              </div>
+              <div class="grid grid-cols-2 gap-1.5">
+                <button onclick="exportSetlist('poster', 'png')" class="py-1.5 px-2 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold rounded flex items-center justify-center gap-1.5 border border-zinc-700 transition active:scale-95">
+                  <i class="fa-solid fa-image text-amber-400 text-[10px]"></i>
+                  <span>PNG</span>
+                </button>
+                <button onclick="exportSetlist('poster', 'pdf')" class="py-1.5 px-2 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold rounded flex items-center justify-center gap-1.5 border border-zinc-700 transition active:scale-95">
+                  <i class="fa-solid fa-file-pdf text-red-400 text-[10px]"></i>
+                  <span>PDF</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Opción 2: Vista Actual (como se ve en móvil/pantalla) -->
+            <div class="pt-2">
+              <div class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5 flex items-center gap-1">
+                <i class="fa-solid fa-mobile-screen text-[10px]"></i>
+                <span>Vista Actual (Como se ve)</span>
+              </div>
+              <div class="grid grid-cols-2 gap-1.5">
+                <button onclick="exportSetlist('current', 'png')" class="py-1.5 px-2 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold rounded flex items-center justify-center gap-1.5 border border-zinc-700 transition active:scale-95">
+                  <i class="fa-solid fa-image text-amber-400 text-[10px]"></i>
+                  <span>PNG</span>
+                </button>
+                <button onclick="exportSetlist('current', 'pdf')" class="py-1.5 px-2 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold rounded flex items-center justify-center gap-1.5 border border-zinc-700 transition active:scale-95">
+                  <i class="fa-solid fa-file-pdf text-red-400 text-[10px]"></i>
+                  <span>PDF</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </header>
@@ -535,6 +578,7 @@
         closeLogoModal();
         closeBulkModal();
         closeConfirmDeleteModal();
+        closeDownloadMenu();
       }
     });
 
@@ -1104,45 +1148,34 @@
       imgEl.src = targetSrc;
     }
 
-    async function exportAsImage() {
-      const posterNode = document.getElementById('setlistPoster');
-      showToast("Generando imagen...", "info");
-      document.body.classList.add('exporting');
+    function toggleDownloadMenu(e) {
+      if (e) e.stopPropagation();
+      const menu = document.getElementById('downloadDropdown');
+      if (menu) menu.classList.toggle('hidden');
+    }
 
-      // Diagnóstico detallado en consola F12
-      console.group("🛠️ [DIAGNÓSTICO EXPORTACIÓN PNG - HTML2CANVAS]");
-      console.log("1. Nodo objetivo:", posterNode);
-      console.log("2. Ancho / Alto cliente:", posterNode.clientWidth, "x", posterNode.clientHeight);
-      console.log("3. Pixel Ratio dispositivo:", window.devicePixelRatio);
-      
-      const sampleBar = document.querySelector('.block-header-bar');
-      const sampleBadge = document.querySelector('.badge-circle');
-      const sampleTitle = document.querySelector('.block-title-text');
-      if (sampleBar && sampleBadge && sampleTitle) {
-        console.table({
-          "Header Bar": {
-            "Alto offset": sampleBar.offsetHeight + "px",
-            "Padding Top": window.getComputedStyle(sampleBar).paddingTop,
-            "Padding Bottom": window.getComputedStyle(sampleBar).paddingBottom,
-            "Display": window.getComputedStyle(sampleBar).display
-          },
-          "Badge Circle": {
-            "Alto": sampleBadge.offsetHeight + "px",
-            "Line Height": window.getComputedStyle(sampleBadge).lineHeight,
-            "Display": window.getComputedStyle(sampleBadge).display
-          },
-          "Title Text": {
-            "Alto": sampleTitle.offsetHeight + "px",
-            "Line Height": window.getComputedStyle(sampleTitle).lineHeight,
-            "Display": window.getComputedStyle(sampleTitle).display
-          }
-        });
+    function closeDownloadMenu() {
+      const menu = document.getElementById('downloadDropdown');
+      if (menu) menu.classList.add('hidden');
+    }
+
+    window.addEventListener('click', (e) => {
+      const menu = document.getElementById('downloadDropdown');
+      const btn = document.getElementById('downloadMenuBtn');
+      if (menu && !menu.contains(e.target) && (!btn || !btn.contains(e.target))) {
+        menu.classList.add('hidden');
       }
+    });
+
+    async function exportSetlist(mode = 'poster', format = 'png') {
+      closeDownloadMenu();
+      const posterNode = document.getElementById('setlistPoster');
+      showToast(`Generando ${format.toUpperCase()} (${mode === 'poster' ? 'Cartel' : 'Vista actual'})...`, "info");
+      document.body.classList.add('exporting');
 
       try {
         if (document.fonts && document.fonts.ready) {
           await document.fonts.ready;
-          console.log("4. Fuentes listas: Montserrat y Bebas Neue cargadas.");
         }
 
         const logoImg = document.getElementById('customLogoImg');
@@ -1157,30 +1190,23 @@
 
         await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
-        const canvas = await html2canvas(posterNode, {
+        const html2canvasOptions = {
           scale: 2.5,
           backgroundColor: '#060607',
           useCORS: true,
           allowTaint: false,
-          logging: true,
+          logging: false,
           scrollX: 0,
-          scrollY: 0,
-          windowWidth: 1200, // Fuerza al motor a evaluar siempre media-queries de escritorio
-          onclone: (clonedDoc) => {
-            console.log("5. onclone ejecutado: forzando diseño de PC Escritorio (980px 2-columnas)...");
-            
+          scrollY: 0
+        };
+
+        if (mode === 'poster') {
+          html2canvasOptions.windowWidth = 1200;
+          html2canvasOptions.onclone = (clonedDoc) => {
             clonedDoc.querySelectorAll('.edit-only-control').forEach(el => {
               el.style.display = 'none';
             });
 
-            // 1. Forzar el póster clonado a dimensiones fijas de escritorio
-            const clonedPoster = clonedDoc.getElementById('setlistPoster');
-            if (clonedPoster) {
-              clonedPoster.classList.add('force-desktop-export');
-            }
-
-            // 2. Forzar el contenedor de bloques SIEMPRE a 2 columnas en el PNG
-            // 2. Forzar el contenedor de bloques siempre a 2 columnas
             const clonedBlocksContainer = clonedDoc.getElementById('blocksContainer');
             if (clonedBlocksContainer) {
               clonedBlocksContainer.style.display = 'grid';
@@ -1189,7 +1215,6 @@
               clonedBlocksContainer.style.rowGap = '16px';
             }
 
-            // 3. Forzar tipografía grande de cartel en el clon
             clonedDoc.querySelectorAll('.song-num').forEach(num => {
               num.style.fontSize = '26px';
               num.style.width = '42px';
@@ -1209,7 +1234,6 @@
               row.style.columnGap = '10px';
             });
 
-            // 4. Bloques con ancho completo (impar final)
             clonedDoc.querySelectorAll('.block-card').forEach(card => {
               if (card.getAttribute('data-spans-full') === 'true') {
                 card.style.gridColumn = '1 / -1';
@@ -1224,81 +1248,45 @@
               g.style.gridTemplateColumns = 'repeat(2, minmax(0, 1fr))';
               g.style.columnGap = '12px';
             });
-
-            const clonedSubtitle = clonedDoc.getElementById('posterSubtitle');
-            if (clonedSubtitle) {
-              clonedSubtitle.style.fontSize = '72px';
-              clonedSubtitle.style.lineHeight = '1.3';
-              clonedSubtitle.style.marginBottom = '18px';
-              clonedSubtitle.style.paddingBottom = '8px';
-            }
-
-            const clonedLogoSlot = clonedDoc.getElementById('logoContainer');
-            if (clonedLogoSlot) {
-              clonedLogoSlot.style.marginTop = '14px';
-              clonedLogoSlot.style.minHeight = 'auto';
-            }
-
-            const clonedLogo = clonedDoc.getElementById('customLogoImg');
-            if (clonedLogo) {
-              clonedLogo.style.width = '80%';
-              clonedLogo.style.height = 'auto';
-              clonedLogo.style.maxHeight = 'none';
-            }
-
-            // Normalización estricta de las barras de bloque en el clon
-            clonedDoc.querySelectorAll('.block-header-bar').forEach(bar => {
-              bar.style.paddingTop = '0px';
-              bar.style.paddingBottom = '0px';
-              bar.style.height = '48px';
-              bar.style.maxHeight = '48px';
-              bar.style.minHeight = '48px';
-              bar.style.display = 'flex';
-              bar.style.alignItems = 'center';
-              bar.style.boxSizing = 'border-box';
+          };
+        } else {
+          // Modo "Vista Actual": sin forzar 2 columnas, captura tal como está en tu pantalla
+          html2canvasOptions.onclone = (clonedDoc) => {
+            clonedDoc.querySelectorAll('.edit-only-control').forEach(el => {
+              el.style.display = 'none';
             });
+          };
+        }
 
-            clonedDoc.querySelectorAll('.badge-circle').forEach(badge => {
-              badge.style.display = 'inline-block';
-              badge.style.width = '32px';
-              badge.style.height = '32px';
-              badge.style.minWidth = '32px';
-              badge.style.lineHeight = '32px';
-              badge.style.fontSize = '17px';
-              badge.style.textAlign = 'center';
-              badge.style.verticalAlign = 'middle';
-              badge.style.borderRadius = '50%';
-              badge.style.margin = '0';
-              badge.style.padding = '0';
-            });
-
-            clonedDoc.querySelectorAll('.block-title-text').forEach(t => {
-              t.style.display = 'inline-block';
-              t.style.lineHeight = '48px';
-              t.style.height = '48px';
-              t.style.fontSize = '17px';
-              t.style.verticalAlign = 'middle';
-              t.style.margin = '0 0 0 10px';
-              t.style.padding = '0';
-            });
-          }
-        });
-
-        console.log("6. Canvas generado exitosamente con dimensiones:", canvas.width, "x", canvas.height);
-        console.groupEnd();
-
+        const canvas = await html2canvas(posterNode, html2canvasOptions);
         const dataUrl = canvas.toDataURL('image/png');
         if (!dataUrl || dataUrl.length < 200) throw new Error("Render vacío");
 
-        const link = document.createElement('a');
-        link.download = `setlist-colapso-${Date.now()}.png`;
-        link.href = dataUrl;
-        document.body.appendChild(link); link.click(); document.body.removeChild(link);
-        showToast("¡Póster descargado!", "success");
+        const filenameBase = `setlist-colapso-${mode}-${Date.now()}`;
+
+        if (format === 'png') {
+          const link = document.createElement('a');
+          link.download = `${filenameBase}.png`;
+          link.href = dataUrl;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          showToast("¡PNG descargado con éxito!", "success");
+        } else if (format === 'pdf') {
+          const { jsPDF } = window.jspdf;
+          const isLandscape = canvas.width > canvas.height;
+          const pdf = new jsPDF({
+            orientation: isLandscape ? 'landscape' : 'portrait',
+            unit: 'px',
+            format: [canvas.width, canvas.height]
+          });
+          pdf.addImage(dataUrl, 'PNG', 0, 0, canvas.width, canvas.height);
+          pdf.save(`${filenameBase}.pdf`);
+          showToast("¡PDF descargado con éxito!", "success");
+        }
       } catch (err) {
         console.error("Export error:", err);
-        console.groupEnd();
-        showToast("Error al generar imagen: " + (err.message || ""), "error");
+        showToast("Error al generar archivo: " + (err.message || ""), "error");
       } finally {
         document.body.classList.remove('exporting');
       }
